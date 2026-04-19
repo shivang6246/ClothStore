@@ -27,7 +27,7 @@ export default function Cart() {
              <Link to="/"><button className="filled-btn" style={{padding: '1rem 3rem'}}>Start Shopping</button></Link>
           </div>
         ) : (
-          <div style={{display: 'grid', gridTemplateColumns: '1fr 350px', gap: '3rem', alignItems: 'start'}}>
+          <div className="cart-grid">
             {/* Items */}
             <div>
               {cart.map(item => (

@@ -102,7 +102,7 @@ export default function Collection() {
             <p style={{ fontSize: '0.8rem', letterSpacing: '2px' }}>NO PIECES FOUND</p>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2rem' }}>
+          <div className="grid-3" style={{ gap: '2rem' }}>
             {filtered.map((p, i) => (
               <Link key={p.id} to={`/product/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className="product-card" onMouseEnter={() => setHoveredId(p.id)} onMouseLeave={() => setHoveredId(null)}

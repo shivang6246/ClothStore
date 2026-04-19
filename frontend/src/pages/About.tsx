@@ -34,7 +34,7 @@ export default function About() {
       </nav>
 
       {/* HERO */}
-      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '70vh' }}>
+      <section className="grid-2" style={{ minHeight: '70vh' }}>
         <div style={{ padding: '6rem 6% 6rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <p className="fade-up" style={{ fontSize: '0.6rem', letterSpacing: '5px', textTransform: 'uppercase', color: '#c9a96e', marginBottom: 18 }}>Our Story</p>
           <h1 className="fade-up" style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(2.5rem, 4vw, 3.8rem)', fontWeight: 300, margin: '0 0 2rem', lineHeight: 1.2, fontStyle: 'italic', animationDelay: '0.1s' }}>

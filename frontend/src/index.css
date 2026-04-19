@@ -267,3 +267,56 @@ img { max-width: 100%; display: block; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
 ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+/* ─── Responsive Utilities ─── */
+.responsive-padding {
+  padding: 0 5%;
+}
+@media (min-width: 1024px) {
+  .responsive-padding {
+    padding: 0 8%;
+  }
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; }
+
+.cart-grid { display: grid; grid-template-columns: 1fr 350px; gap: 3rem; align-items: start; }
+.checkout-grid { display: grid; grid-template-columns: 1fr 380px; gap: 3rem; align-items: start; }
+
+.responsive-nav {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: wrap;
+}
+
+/* Tablet & Smaller Desktop */
+@media (max-width: 992px) {
+  .cart-grid, .checkout-grid { grid-template-columns: 1fr; }
+  .grid-5 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 1.5rem !important; }
+  .grid-5 { grid-template-columns: 1fr 1fr; }
+  .hide-mobile { display: none !important; }
+  
+  .responsive-nav { padding: 1rem 5% !important; flex-wrap: nowrap; }
+  .nav-links { display: none !important; }
+  
+  .home-hero-text { font-size: 2.2rem !important; }
+  .product-title { font-size: 1.8rem !important; }
+  .mobile-gap-sm { gap: 1rem !important; }
+  .admin-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .section-y-padding { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+}
+
+@media (max-width: 480px) {
+  .grid-4, .grid-5 { grid-template-columns: 1fr; }
+  .cart-grid, .checkout-grid { gap: 1.5rem; }
+}

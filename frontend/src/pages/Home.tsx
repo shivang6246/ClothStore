@@ -218,7 +218,7 @@ export default function Home() {
       )}
 
       {/* ══════════════ NAVBAR ══════════════ */}
-      <nav style={{
+      <nav className="responsive-nav" style={{
         position:"fixed", top:0, left:0, right:0, zIndex:500,
         height:72, display:"grid", gridTemplateColumns:"1fr auto 1fr",
         alignItems:"center", padding:"0 40px", gap:24,
@@ -228,7 +228,7 @@ export default function Home() {
         borderBottom: scrolled ? "0.5px solid #1a1a1a" : "0.5px solid transparent"
       }}>
         {/* LEFT  */}
-        <div style={{ display:"flex", gap:32, alignItems:"center" }}>
+        <div className="nav-links" style={{ display:"flex", gap:32, alignItems:"center" }}>
           <button className="nb" onClick={() => nav("home")}>Home</button>
           <button className="nb" onClick={() => nav("collection")}>Collection</button>
           <button className="nb" onClick={() => nav("looks")}>Looks</button>
@@ -339,7 +339,7 @@ function HomePage({ slides, heroIdx, setHeroIdx, setPage, products, addToCart, t
         {/* text */}
         <div style={{ position:"absolute", bottom:"14%", left:"8%", maxWidth:600, zIndex:2 }}>
           <p style={{ fontFamily:"'Montserrat',sans-serif", fontSize:10, letterSpacing:5, color:"#c9a96e", textTransform:"uppercase", marginBottom:18 }}>{slides[heroIdx].sub}</p>
-          <h1 style={{ fontSize:"clamp(44px,8vw,92px)", fontWeight:300, lineHeight:1.06, letterSpacing:2, marginBottom:36, textShadow:"0 2px 40px rgba(0,0,0,.5)" }}>{slides[heroIdx].title}</h1>
+          <h1 className="home-hero-text" style={{ fontSize:"clamp(44px,8vw,92px)", fontWeight:300, lineHeight:1.06, letterSpacing:2, marginBottom:36, textShadow:"0 2px 40px rgba(0,0,0,.5)" }}>{slides[heroIdx].title}</h1>
           <button className="gh-btn" onClick={() => setPage("collection")}
             style={{ padding:"15px 44px", border:"0.5px solid rgba(240,237,230,.75)", background:"transparent", color:"#f0ede6", fontFamily:"'Montserrat',sans-serif", fontSize:9, letterSpacing:4.5, textTransform:"uppercase", cursor:"pointer" }}>
             Explore Collection
@@ -368,7 +368,7 @@ function HomePage({ slides, heroIdx, setHeroIdx, setPage, products, addToCart, t
       </div>
 
       {/* NEW ARRIVALS */}
-      <section style={{ padding:"88px 8% 72px" }}>
+      <section className="responsive-padding section-y-padding" style={{ padding:"88px 8% 72px" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:52 }}>
           <div>
             <p style={{ fontFamily:"'Montserrat',sans-serif", fontSize:9, letterSpacing:4, color:"#c9a96e", textTransform:"uppercase", marginBottom:14 }}>Curated</p>
@@ -376,13 +376,13 @@ function HomePage({ slides, heroIdx, setHeroIdx, setPage, products, addToCart, t
           </div>
           <button onClick={() => setPage("collection")} style={{ fontFamily:"'Montserrat',sans-serif", fontSize:9, letterSpacing:3, color:"#555", textTransform:"uppercase", background:"none", border:"none", cursor:"pointer", borderBottom:"0.5px solid #2a2a2a", paddingBottom:5 }}>View All</button>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))", gap:28 }}>
+        <div className="mobile-gap-sm" style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))", gap:28 }}>
           {products.slice(0,4).map((p: Product) => <ProductCard key={p.id} p={p} addToCart={addToCart} toggleWish={toggleWish} wishlist={wishlist} setQuickView={setQuickView} />)}
         </div>
       </section>
 
       {/* EDITORIAL SPLIT */}
-      <section style={{ margin:"0 8% 88px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:3, height:460 }}>
+      <section className="grid-2 responsive-padding" style={{ marginBottom:88, minHeight: 460 }}>
         {[
           { src:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&h=460&q=80", fb:"https://picsum.photos/seed/ed1/800/460", tag:"The Edit", title:"Winter Essentials" },
           { src:"https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=800&h=460&q=80", fb:"https://picsum.photos/seed/ed2/800/460", tag:"Lookbook", title:"Evening Glamour" },
@@ -398,7 +398,7 @@ function HomePage({ slides, heroIdx, setHeroIdx, setPage, products, addToCart, t
       </section>
 
       {/* NEWSLETTER */}
-      <section style={{ background:"#0d0d0d", padding:"84px 8%", textAlign:"center", borderTop:"0.5px solid #141414", borderBottom:"0.5px solid #141414" }}>
+      <section className="responsive-padding section-y-padding" style={{ background:"#0d0d0d", paddingTop:"84px", paddingBottom:"84px", textAlign:"center", borderTop:"0.5px solid #141414", borderBottom:"0.5px solid #141414" }}>
         <p style={{ fontFamily:"'Montserrat',sans-serif", fontSize:9, letterSpacing:5, color:"#c9a96e", textTransform:"uppercase", marginBottom:18 }}>Members Only</p>
         <h2 style={{ fontSize:38, fontWeight:300, letterSpacing:2, marginBottom:14 }}>Join the Inner Circle</h2>
         <p style={{ fontFamily:"'Montserrat',sans-serif", fontSize:11, color:"#888", letterSpacing:.5, lineHeight:2.2, maxWidth:360, margin:"0 auto 40px" }}>Early drops, exclusive editorials, and member privileges.</p>

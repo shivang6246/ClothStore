@@ -230,7 +230,7 @@ export default function UserDashboard() {
         </div>
 
         {/* Stats Strip */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '3rem' }}>
+        <div className="grid-3" style={{ marginBottom: '3rem' }}>
           {[
             { label: 'Total Orders', value: orders.length },
             { label: 'Delivered', value: orders.filter(o => o.status === 'DELIVERED').length },

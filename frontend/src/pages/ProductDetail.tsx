@@ -86,9 +86,8 @@ export default function ProductDetail() {
         .tab-btn:hover { color: #f0ede6 !important; }
       `}</style>
 
-      {/* ── NAV (matches VOGUE theme) ── */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.4rem 5%', borderBottom: '0.5px solid #141414', backgroundColor: '#0a0a0a', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ display: 'flex', gap: '2.5rem', fontFamily: "'Montserrat',sans-serif", fontSize: 9, letterSpacing: 3.5, textTransform: 'uppercase' }}>
+      <nav className="responsive-nav" style={{ padding: '1.4rem 5%', borderBottom: '0.5px solid #141414', backgroundColor: '#0a0a0a', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div className="nav-links" style={{ display: 'flex', gap: '2.5rem', fontFamily: "'Montserrat',sans-serif", fontSize: 9, letterSpacing: 3.5, textTransform: 'uppercase' }}>
           <Link to="/" style={{ textDecoration: 'none', color: '#555' }}>Home</Link>
           <Link to="/collection" style={{ textDecoration: 'none', color: '#f0ede6' }}>Collection</Link>
           <Link to="/looks" style={{ textDecoration: 'none', color: '#555' }}>Looks</Link>
@@ -125,7 +124,7 @@ export default function ProductDetail() {
 
 
       {/* ── MAIN GRID ── */}
-      <div style={{ maxWidth: 1200, margin: '3rem auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5rem', padding: '0 5%' }}>
+      <div className="grid-2" style={{ maxWidth: 1200, margin: '3rem auto', padding: '0 5%' }}>
 
         {/* GALLERY */}
         <div className="pd-anim" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -154,7 +153,7 @@ export default function ProductDetail() {
           <p style={{ fontFamily: "'Montserrat',sans-serif", fontSize: 9, letterSpacing: 5, color: '#c9a96e', textTransform: 'uppercase', marginBottom: 10 }}>{product.category || 'Clothing'}</p>
 
           {/* Name */}
-          <h1 style={{ fontSize: '2.6rem', color: '#f0ede6', marginBottom: '0.8rem', fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, letterSpacing: 2, lineHeight: 1.15 }}>{product.name}</h1>
+          <h1 className="product-title" style={{ fontSize: '2.6rem', color: '#f0ede6', marginBottom: '0.8rem', fontFamily: "'Cormorant Garamond',serif", fontWeight: 300, letterSpacing: 2, lineHeight: 1.15 }}>{product.name}</h1>
 
           {/* Real rating */}
           {reviewStats && reviewStats.total > 0 && (

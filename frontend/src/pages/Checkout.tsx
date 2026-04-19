@@ -76,7 +76,7 @@ export default function Checkout() {
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '3rem 5%' }}>
         <h1 className="serif" style={{ fontSize: '2.2rem', marginBottom: '3rem' }}>Checkout</h1>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '3rem', alignItems: 'start' }}>
+        <div className="checkout-grid">
           {/* Left: Address + Coupon */}
           <form onSubmit={handleCheckout}>
             <h3 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 300, textTransform: 'uppercase', letterSpacing: '3px', fontSize: '0.85rem', marginBottom: '1.5rem', color: 'var(--text-muted)' }}>Shipping Address</h3>
@@ -90,7 +90,7 @@ export default function Checkout() {
                 <label style={labelStyle}>Street Address</label>
                 <input required className="input-field" style={inputStyle} value={address.street} onChange={e => setAddress({ ...address, street: e.target.value })} placeholder="123 Main St" />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="grid-2" style={{ gap: '1rem' }}>
                 <div>
                   <label style={labelStyle}>City</label>
                   <input required className="input-field" style={inputStyle} value={address.city} onChange={e => setAddress({ ...address, city: e.target.value })} placeholder="New Delhi" />

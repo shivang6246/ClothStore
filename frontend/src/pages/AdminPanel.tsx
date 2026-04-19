@@ -321,7 +321,7 @@ export default function AdminPanel() {
             {activeTab === 'dashboard' && (
               <div className="ap-fade">
                 {/* KPI Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.2rem', marginBottom: '2rem' }}>
+                <div className="grid-4" style={{ marginBottom: '2rem' }}>
                   {[
                     { label: 'Total Products', value: products.length, sub: 'In catalog', color: '#3b82f6', icon: '◫' },
                     { label: 'Total Orders', value: orders.length, sub: 'All time', color: '#c9a96e', icon: '◻' },
@@ -341,7 +341,7 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Status strip */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem', marginBottom: '2.5rem' }}>
+                <div className="grid-3" style={{ marginBottom: '2.5rem' }}>
                   {[{ label: 'Paid', count: paidOrders, color: '#3b82f6' }, { label: 'Shipped', count: shippedOrders, color: '#f59e0b' }, { label: 'Delivered', count: deliveredOrders, color: '#22c55e' }].map((s, i) => (
                     <div key={i} style={{ ...CARD, display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.2rem 1.6rem' }}>
                       <div style={{ width: 40, height: 40, borderRadius: 10, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -376,7 +376,7 @@ export default function AdminPanel() {
                 ) : analytics ? (
                   <>
                     {/* KPI Strip */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '1rem', marginBottom: '2rem' }}>
+                    <div className="grid-5" style={{ marginBottom: '2rem' }}>
                       {[
                         { label: 'Revenue', value: `₹${analytics.totalRevenue?.toLocaleString()}`, color: '#22c55e' },
                         { label: 'Orders', value: analytics.totalOrders, color: '#3b82f6' },
@@ -392,7 +392,7 @@ export default function AdminPanel() {
                       ))}
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
                       <div style={CARD}>
                         <div style={{ fontSize: '0.65rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: '#aaa', fontWeight: 600, marginBottom: '1.2rem' }}>Revenue — Last 14 Days</div>
                         <BarChart data={analytics.revenueByDay ?? {}} color="#c9a96e" label="₹" />
@@ -403,7 +403,7 @@ export default function AdminPanel() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '1.5rem' }}>
+                    <div className="grid-2">
                       {/* Top products */}
                       <div style={CARD}>
                         <div style={{ fontSize: '0.65rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: '#aaa', fontWeight: 600, marginBottom: '1.2rem' }}>Top Selling Products</div>
@@ -698,7 +698,7 @@ export default function AdminPanel() {
             <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '1.6rem', fontWeight: 300, margin: '0 0 2rem', color: '#f0ede6' }}>{currentProduct.id ? 'Edit Product' : 'Add New Product'}</h2>
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div><label style={LABEL}>Product Name *</label><input style={INPUT} value={currentProduct.name || ''} onChange={e => setCurrentProduct({ ...currentProduct, name: e.target.value })} required placeholder="e.g. Classic Oxford Shirt" /></div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="grid-2">
                 <div><label style={LABEL}>Category</label>
                   <select style={{ ...INPUT, cursor: 'pointer' }} value={currentProduct.category || ''} onChange={e => setCurrentProduct({ ...currentProduct, category: e.target.value })}>
                     <option value="">Select...</option>
@@ -708,7 +708,7 @@ export default function AdminPanel() {
                 <div><label style={LABEL}>Price (₹) *</label><input type="number" step="0.01" style={INPUT} value={currentProduct.price || ''} onChange={e => setCurrentProduct({ ...currentProduct, price: parseFloat(e.target.value) })} required placeholder="999" /></div>
               </div>
               <div><label style={LABEL}>Description *</label><textarea style={{ ...INPUT, resize: 'vertical', minHeight: 80 }} value={currentProduct.description || ''} onChange={e => setCurrentProduct({ ...currentProduct, description: e.target.value })} required placeholder="Describe the product..." /></div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+              <div className="grid-3">
                 <div><label style={LABEL}>Sizes (CSV)</label><input style={INPUT} value={currentProduct.sizes?.join ? currentProduct.sizes.join(', ') : ''} onChange={e => setCurrentProduct({ ...currentProduct, sizes: e.target.value as any })} placeholder="S, M, L, XL" /></div>
                 <div><label style={LABEL}>Colors (CSV)</label><input style={INPUT} value={currentProduct.colors?.join ? currentProduct.colors.join(', ') : ''} onChange={e => setCurrentProduct({ ...currentProduct, colors: e.target.value as any })} placeholder="Black, White" /></div>
                 <div><label style={LABEL}>Stock *</label><input type="number" style={INPUT} value={currentProduct.stock ?? 0} onChange={e => setCurrentProduct({ ...currentProduct, stock: parseInt(e.target.value) || 0 })} required min={0} /></div>
@@ -731,7 +731,7 @@ export default function AdminPanel() {
             <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '1.6rem', fontWeight: 300, margin: '0 0 2rem', color: '#f0ede6' }}>{editingCoupon ? 'Edit Coupon' : 'New Coupon'}</h2>
             <form onSubmit={handleSaveCoupon} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div><label style={LABEL}>Coupon Code *</label><input style={{ ...INPUT, fontFamily: "'Montserrat',sans-serif", letterSpacing: '3px', textTransform: 'uppercase' }} value={couponForm.code} onChange={e => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })} required placeholder="e.g. SAVE20" /></div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="grid-2">
                 <div><label style={LABEL}>Discount Type *</label>
                   <select style={{ ...INPUT, cursor: 'pointer' }} value={couponForm.discountType} onChange={e => setCouponForm({ ...couponForm, discountType: e.target.value })}>
                     <option value="PERCENTAGE">Percentage (%)</option>
@@ -740,7 +740,7 @@ export default function AdminPanel() {
                 </div>
                 <div><label style={LABEL}>{couponForm.discountType === 'PERCENTAGE' ? 'Discount %' : 'Discount ₹'} *</label><input type="number" step="0.01" style={INPUT} value={couponForm.discountValue} onChange={e => setCouponForm({ ...couponForm, discountValue: parseFloat(e.target.value) })} required min={0.01} /></div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="grid-2">
                 <div><label style={LABEL}>Min Order (₹)</label><input type="number" style={INPUT} value={couponForm.minOrderAmount ?? 0} onChange={e => setCouponForm({ ...couponForm, minOrderAmount: parseFloat(e.target.value) || 0 })} min={0} /></div>
                 <div><label style={LABEL}>Max Uses (0 = ∞)</label><input type="number" style={INPUT} value={couponForm.maxUses ?? 0} onChange={e => setCouponForm({ ...couponForm, maxUses: parseInt(e.target.value) || 0 })} min={0} /></div>
               </div>

@@ -78,7 +78,7 @@ export default function Looks() {
       </div>
 
       {/* LOOKS GRID */}
-      <div style={{ padding: '4rem 6%', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '2.5rem' }}>
+      <div className="grid-3 responsive-padding section-y-padding" style={{ gap: '2.5rem' }}>
         {LOOKS.map((look, i) => (
           <div key={look.id} className="look-card" style={{ animationDelay: `${i * 0.1}s` }}>
             {/* Image */}
