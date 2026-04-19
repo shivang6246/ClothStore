@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 
@@ -93,7 +93,7 @@ function OrderCard({ order, onCancelled }: { order: any; onCancelled: () => void
       >
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           <div>
-            <div style={{ fontWeight: 500, fontSize: '0.95rem', marginBottom: 2, fontFamily: "'Cormorant Garamond', serif", fontSize: '1.1rem' }}>
+            <div style={{ fontWeight: 500, fontSize: '1.1rem', marginBottom: 2, fontFamily: "'Cormorant Garamond', serif" }}>
               Order #{order.id}
             </div>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
