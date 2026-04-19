@@ -43,9 +43,26 @@ public class ProductController {
         String fileUrl = fileStorageService.storeFile(file);
         Product updateSpec = new Product();
         updateSpec.setImageUrl(fileUrl);
-        // Assuming we keep existing name/desc/price when using the service update
         Product product = productService.updateProduct(id, updateSpec);
         return ResponseEntity.ok(product);
+    }
+
+    @PostMapping("/{id}/multiple-images")
+    public ResponseEntity<Product> uploadMultipleImages(@PathVariable Long id, @RequestParam("files") MultipartFile[] files) {
+        java.util.List<String> fileUrls = new java.util.ArrayList<>();
+        for (MultipartFile file : files) {
+            fileUrls.add(fileStorageService.storeFile(file));
+        }
+        Product existing = productService.getProductById(id);
+        java.util.List<String> currentImages = existing.getMultipleImages();
+        if (currentImages == null) {
+            currentImages = new java.util.ArrayList<>();
+        }
+        currentImages.addAll(fileUrls);
+        
+        Product updateSpec = new Product();
+        updateSpec.setMultipleImages(currentImages);
+        return ResponseEntity.ok(productService.updateProduct(id, updateSpec));
     }
     
     @PutMapping("/{id}")

@@ -19,6 +19,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState('');
   const [activeTab, setActiveTab] = useState('description');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -93,13 +94,34 @@ export default function ProductDetail() {
           <Link to="/looks" style={{ textDecoration: 'none', color: '#555' }}>Looks</Link>
           <Link to="/about" style={{ textDecoration: 'none', color: '#555' }}>About</Link>
         </div>
-        <Link to="/" style={{ textDecoration: 'none', color: '#f0ede6', fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 300, letterSpacing: 12 }}>VOGUE</Link>
+        <Link to="/" className="logo" style={{ textDecoration: 'none', color: '#f0ede6', fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 300, letterSpacing: 12 }}>VOGUE</Link>
         <div style={{ display: 'flex', gap: '1.8rem', alignItems: 'center', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase' }}>
-          <Link to="/wishlist" style={{ textDecoration: 'none', color: '#555' }}>Wishlist</Link>
+          <Link to="/wishlist" className="hide-mobile" style={{ textDecoration: 'none', color: '#555' }}>Wishlist</Link>
           <Link to="/cart" style={{ textDecoration: 'none', color: '#555' }}>Bag</Link>
-          <Link to="/account" style={{ textDecoration: 'none', color: '#555' }}>Account</Link>
+          <Link to="/account" className="hide-mobile" style={{ textDecoration: 'none', color: '#555' }}>Account</Link>
+          <button className="hamburger-btn" onClick={() => setMobileMenuOpen(true)}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
         </div>
       </nav>
+
+      {/* MOBILE DRAWER */}
+      <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)} />
+      <div className={`mobile-menu-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"2rem" }}>
+          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, letterSpacing:6, color:"#f0ede6" }}>VOGUE</span>
+          <button onClick={() => setMobileMenuOpen(false)} style={{ background:"none", border:"none", color:"#fff", fontSize:"1.5rem" }}>✕</button>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:"1.5rem" }}>
+          <Link to="/" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1.2rem", textDecoration:"none", color:"#f0ede6" }}>Home</Link>
+          <Link to="/collection" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1.2rem", textDecoration:"none", color:"#f0ede6" }}>Collection</Link>
+          <Link to="/looks" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1.2rem", textDecoration:"none", color:"#f0ede6" }}>Looks</Link>
+          <Link to="/about" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1.2rem", textDecoration:"none", color:"#f0ede6" }}>About</Link>
+          <hr style={{ borderTop:"0.5px solid #222", margin:"1rem 0", border:"none" }} />
+          <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1rem", textDecoration:"none", color:"#888" }}>Wishlist</Link>
+          <Link to="/account" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1rem", textDecoration:"none", color:"#888" }}>Account</Link>
+        </div>
+      </div>
 
       {/* ── BREADCRUMB + BACK BUTTON ── */}
       <div style={{ padding: '0.9rem 5%', fontSize: '0.7rem', color: '#444', borderBottom: '0.5px solid #111', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: 1 }}>

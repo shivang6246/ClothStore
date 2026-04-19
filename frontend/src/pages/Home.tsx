@@ -56,6 +56,7 @@ export default function Home() {
   const [query, setQuery]       = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string>("M");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -248,22 +249,45 @@ export default function Home() {
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
           
-          <button className="ib" onClick={() => navigate("/account")} title="Account" style={{fontSize: '11px', fontFamily:"'Montserrat',sans-serif", letterSpacing: '1px'}}>
+          <button className="ib hide-mobile" onClick={() => navigate("/account")} title="Account" style={{fontSize: '11px', fontFamily:"'Montserrat',sans-serif", letterSpacing: '1px'}}>
             {user?.fullName?.split(' ')[0] || "Profile"}
           </button>
 
           {isAdmin && (
-             <button className="ib" onClick={() => navigate("/admin")} title="Admin Dashboard" style={{fontSize: '10px', color:'#c9a96e', fontFamily:"'Montserrat',sans-serif", letterSpacing: '1px'}}>ADMIN</button>
+             <button className="ib hide-mobile" onClick={() => navigate("/admin")} title="Admin Dashboard" style={{fontSize: '10px', color:'#c9a96e', fontFamily:"'Montserrat',sans-serif", letterSpacing: '1px'}}>ADMIN</button>
           )}
 
-          <button className="ib" onClick={logout} title="Logout" style={{fontSize: '10px', fontFamily:"'Montserrat',sans-serif", letterSpacing: '1px', opacity: 0.6}}>LOGOUT</button>
+          <button className="ib hide-mobile" onClick={logout} title="Logout" style={{fontSize: '10px', fontFamily:"'Montserrat',sans-serif", letterSpacing: '1px', opacity: 0.6}}>LOGOUT</button>
 
           <button className="ib" style={{ position:"relative" }} onClick={() => setCartOpen(true)} title="Bag">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
             {cartCount > 0 && <span style={{ position:"absolute", top:2, right:2, background:"#c9a96e", color:"#0a0a0a", borderRadius:"50%", width:15, height:15, fontSize:8, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Montserrat',sans-serif", fontWeight:600 }}>{cartCount}</span>}
           </button>
+          
+          <button className="hamburger-btn" onClick={() => setMobileMenuOpen(true)}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
         </div>
       </nav>
+
+      {/* MOBILE DRAWER */}
+      <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)} />
+      <div className={`mobile-menu-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"2rem" }}>
+          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, letterSpacing:6, color:"#f0ede6" }}>VOGUE</span>
+          <button onClick={() => setMobileMenuOpen(false)} style={{ background:"none", border:"none", color:"#fff", fontSize:"1.5rem" }}>✕</button>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:"1.5rem" }}>
+          <button className="nb" onClick={() => { nav("home"); setMobileMenuOpen(false); }} style={{ fontSize:"1.2rem", textAlign:"left", color:"#f0ede6" }}>Home</button>
+          <button className="nb" onClick={() => { nav("collection"); setMobileMenuOpen(false); }} style={{ fontSize:"1.2rem", textAlign:"left", color:"#f0ede6" }}>Collection</button>
+          <button className="nb" onClick={() => { nav("looks"); setMobileMenuOpen(false); }} style={{ fontSize:"1.2rem", textAlign:"left", color:"#f0ede6" }}>Looks</button>
+          <button className="nb" onClick={() => { nav("about"); setMobileMenuOpen(false); }} style={{ fontSize:"1.2rem", textAlign:"left", color:"#f0ede6" }}>About</button>
+          <hr style={{ borderTop:"0.5px solid #222", margin:"1rem 0", border:"none" }} />
+          <button className="nb" onClick={() => { navigate("/account"); setMobileMenuOpen(false); }} style={{ fontSize:"1rem", textAlign:"left", color:"#888" }}>Account</button>
+          {isAdmin && <button className="nb" onClick={() => { navigate("/admin"); setMobileMenuOpen(false); }} style={{ fontSize:"1rem", textAlign:"left", color:"#c9a96e" }}>Admin Panel</button>}
+          {user && <button className="nb" onClick={() => { logout(); setMobileMenuOpen(false); }} style={{ fontSize:"1rem", textAlign:"left", color:"#888", opacity:0.8 }}>Logout</button>}
+        </div>
+      </div>
 
       {/* SEARCH */}
       {searchOpen && (
@@ -368,7 +392,7 @@ function HomePage({ slides, heroIdx, setHeroIdx, setPage, products, addToCart, t
       </div>
 
       {/* NEW ARRIVALS */}
-      <section className="responsive-padding section-y-padding" style={{ padding:"88px 8% 72px" }}>
+      <section className="section-padding">
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:52 }}>
           <div>
             <p style={{ fontFamily:"'Montserrat',sans-serif", fontSize:9, letterSpacing:4, color:"#c9a96e", textTransform:"uppercase", marginBottom:14 }}>Curated</p>
@@ -398,7 +422,7 @@ function HomePage({ slides, heroIdx, setHeroIdx, setPage, products, addToCart, t
       </section>
 
       {/* NEWSLETTER */}
-      <section className="responsive-padding section-y-padding" style={{ background:"#0d0d0d", paddingTop:"84px", paddingBottom:"84px", textAlign:"center", borderTop:"0.5px solid #141414", borderBottom:"0.5px solid #141414" }}>
+      <section className="section-padding" style={{ background:"#0d0d0d", textAlign:"center", borderTop:"0.5px solid #141414", borderBottom:"0.5px solid #141414" }}>
         <p style={{ fontFamily:"'Montserrat',sans-serif", fontSize:9, letterSpacing:5, color:"#c9a96e", textTransform:"uppercase", marginBottom:18 }}>Members Only</p>
         <h2 style={{ fontSize:38, fontWeight:300, letterSpacing:2, marginBottom:14 }}>Join the Inner Circle</h2>
         <p style={{ fontFamily:"'Montserrat',sans-serif", fontSize:11, color:"#888", letterSpacing:.5, lineHeight:2.2, maxWidth:360, margin:"0 auto 40px" }}>Early drops, exclusive editorials, and member privileges.</p>

@@ -29,6 +29,7 @@ public class CartController {
     }
 
     @GetMapping
+    @Transactional
     public ResponseEntity<List<CartItem>> getCart() {
         return ResponseEntity.ok(cartItemRepository.findByUserId(getCurrentUser().getId()));
     }

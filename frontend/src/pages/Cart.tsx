@@ -2,20 +2,42 @@ import { Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { getPremiumImage } from '../utils/imageUtils';
 
+import { useState } from 'react';
+
 export default function Cart() {
   const { cart, removeFromCart, updateCart, cartTotal } = useStore();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div style={{minHeight: '100vh', backgroundColor: 'var(--bg-primary)', color: 'var(--text-main)', fontFamily: "'Montserrat', sans-serif"}}>
       {/* Nav */}
-      <nav style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 5%', borderBottom: '1px solid rgba(255,255,255,0.06)'}}>
+      <nav className="responsive-nav" style={{padding: '1.5rem 5%', borderBottom: '1px solid rgba(255,255,255,0.06)'}}>
         <Link to="/" className="logo" style={{textDecoration: 'none', color: 'var(--text-main)', letterSpacing: '13px', fontSize: '1.2rem', fontFamily: "'Cormorant Garamond', serif"}}>VOGUE</Link>
-        <div style={{display: 'flex', gap: '2rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px'}}>
-          <Link to="/" style={{textDecoration: 'none', color: 'var(--text-muted)'}}>Continue Shopping</Link>
-          <Link to="/wishlist" style={{textDecoration: 'none', color: 'var(--text-muted)'}}>Wishlist</Link>
-          <Link to="/account" style={{textDecoration: 'none', color: 'var(--text-muted)'}}>My Account</Link>
+        <div style={{display: 'flex', gap: '2rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', alignItems: 'center'}}>
+          <Link to="/" className="hide-mobile" style={{textDecoration: 'none', color: 'var(--text-muted)'}}>Continue Shopping</Link>
+          <Link to="/wishlist" className="hide-mobile" style={{textDecoration: 'none', color: 'var(--text-muted)'}}>Wishlist</Link>
+          <Link to="/account" className="hide-mobile" style={{textDecoration: 'none', color: 'var(--text-muted)'}}>My Account</Link>
+          <button className="hamburger-btn" onClick={() => setMobileMenuOpen(true)}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
         </div>
       </nav>
+
+      {/* MOBILE DRAWER */}
+      <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)} />
+      <div className={`mobile-menu-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"2rem" }}>
+          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, letterSpacing:6, color:"#f0ede6" }}>VOGUE</span>
+          <button onClick={() => setMobileMenuOpen(false)} style={{ background:"none", border:"none", color:"#fff", fontSize:"1.5rem" }}>✕</button>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:"1.5rem" }}>
+          <Link to="/" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1.2rem", textDecoration:"none", color:"#f0ede6" }}>Home</Link>
+          <Link to="/collection" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1.2rem", textDecoration:"none", color:"#f0ede6" }}>Collection</Link>
+          <hr style={{ borderTop:"0.5px solid #222", margin:"1rem 0", border:"none" }} />
+          <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1rem", textDecoration:"none", color:"#888" }}>Wishlist</Link>
+          <Link to="/account" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1rem", textDecoration:"none", color:"#888" }}>Account</Link>
+        </div>
+      </div>
 
       <div style={{maxWidth: '1100px', margin: '0 auto', padding: '3rem 5%'}}>
         <h1 className="serif" style={{fontSize: '2.2rem', marginBottom: '0.5rem', fontFamily: "'Cormorant Garamond', serif"}}>Shopping Bag</h1>

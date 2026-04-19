@@ -17,10 +17,10 @@ public class GlobalExceptionHandler {
                 .body(Map.of("message", "Resource not found", "error", e.getMessage()));
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<?> handleRuntime(RuntimeException e) {
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleIllegalArgument(IllegalArgumentException e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", e.getMessage()));
+                .body(Map.of("message", e.getMessage() != null ? e.getMessage() : "Invalid request"));
     }
 
     @ExceptionHandler(Exception.class)

@@ -181,6 +181,7 @@ export default function UserDashboard() {
   const isAdmin = localStorage.getItem('role') === 'ADMIN';
   const fullName = localStorage.getItem('fullName') || 'User';
   const email = localStorage.getItem('email') || '';
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const fetchOrders = () => {
     api.get('/api/checkout/orders')
@@ -201,16 +202,37 @@ export default function UserDashboard() {
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 5%', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <nav className="responsive-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 5%', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <Link to="/" style={{ textDecoration: 'none', color: 'var(--text-main)', letterSpacing: '13px', fontSize: '1.2rem', fontFamily: "'Cormorant Garamond', serif" }}>VOGUE</Link>
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.75rem' }}>
-          <Link to="/" style={{ textDecoration: 'none', color: 'var(--text-muted)' }}>Shop</Link>
-          <Link to="/cart" style={{ textDecoration: 'none', color: 'var(--text-muted)' }}>Bag</Link>
-          <Link to="/wishlist" style={{ textDecoration: 'none', color: 'var(--text-muted)' }}>Wishlist</Link>
-          {isAdmin && <Link to="/admin" style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 600 }}>Admin Panel</Link>}
-          <button onClick={handleLogout} style={{ background: 'none', border: '1px solid #333', padding: '0.4rem 1rem', color: 'var(--text-main)', borderRadius: 2, cursor: 'pointer', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Sign Out</button>
+          <Link to="/" className="hide-mobile" style={{ textDecoration: 'none', color: 'var(--text-muted)' }}>Shop</Link>
+          <Link to="/cart" className="hide-mobile" style={{ textDecoration: 'none', color: 'var(--text-muted)' }}>Bag</Link>
+          <Link to="/wishlist" className="hide-mobile" style={{ textDecoration: 'none', color: 'var(--text-muted)' }}>Wishlist</Link>
+          {isAdmin && <Link to="/admin" className="hide-mobile" style={{ textDecoration: 'none', color: 'var(--accent)', fontWeight: 600 }}>Admin Panel</Link>}
+          <button onClick={handleLogout} className="hide-mobile" style={{ background: 'none', border: '1px solid #333', padding: '0.4rem 1rem', color: 'var(--text-main)', borderRadius: 2, cursor: 'pointer', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Sign Out</button>
+          <button className="hamburger-btn" onClick={() => setMobileMenuOpen(true)}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
         </div>
       </nav>
+
+      {/* MOBILE DRAWER */}
+      <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)} />
+      <div className={`mobile-menu-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"2rem" }}>
+          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, letterSpacing:6, color:"#f0ede6" }}>VOGUE</span>
+          <button onClick={() => setMobileMenuOpen(false)} style={{ background:"none", border:"none", color:"#fff", fontSize:"1.5rem" }}>✕</button>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:"1.5rem" }}>
+          <Link to="/" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1.2rem", textDecoration:"none", color:"#f0ede6" }}>Home</Link>
+          <Link to="/collection" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1.2rem", textDecoration:"none", color:"#f0ede6" }}>Collection</Link>
+          <hr style={{ borderTop:"0.5px solid #222", margin:"1rem 0", border:"none" }} />
+          <Link to="/cart" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1rem", textDecoration:"none", color:"#888" }}>Bag</Link>
+          <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1rem", textDecoration:"none", color:"#888" }}>Wishlist</Link>
+          {isAdmin && <Link to="/admin" onClick={() => setMobileMenuOpen(false)} style={{ fontSize:"1rem", textDecoration:"none", color:"#c9a96e" }}>Admin Panel</Link>}
+          <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} style={{ fontSize:"1rem", textAlign:"left", textDecoration:"none", color:"#888", background:"transparent", border:"none", cursor:"pointer", padding:0, fontFamily:"inherit" }}>Sign Out</button>
+        </div>
+      </div>
 
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '3rem 5%' }}>
         {/* Profile Header */}

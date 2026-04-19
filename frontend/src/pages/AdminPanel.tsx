@@ -99,6 +99,7 @@ export default function AdminPanel() {
   const [showModal, setShowModal] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product>>({});
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [additionalImageFiles, setAdditionalImageFiles] = useState<FileList | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [orderFilter, setOrderFilter] = useState('ALL');
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
@@ -143,7 +144,12 @@ export default function AdminPanel() {
         const fd = new FormData(); fd.append('file', imageFile);
         await api.post(`/api/products/${saved.id}/image`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       }
-      setShowModal(false); setImageFile(null); setCurrentProduct({}); fetchProducts();
+      if (additionalImageFiles && additionalImageFiles.length > 0 && saved.id) {
+        const mfd = new FormData();
+        Array.from(additionalImageFiles).forEach(file => mfd.append('files', file));
+        await api.post(`/api/products/${saved.id}/multiple-images`, mfd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+      setShowModal(false); setImageFile(null); setAdditionalImageFiles(null); setCurrentProduct({}); fetchProducts();
     } catch { alert('Error saving product.'); }
   };
 
@@ -219,7 +225,7 @@ export default function AdminPanel() {
       `}</style>
 
       {/* ═══════ SIDEBAR ═══════ */}
-      <aside style={{ width: 220, background: '#080808', borderRight: '1px solid #141414', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 10 }}>
+      <aside className="admin-sidebar">
 
         {/* Brand */}
         <div style={{ padding: '2rem 1.5rem 1.5rem', borderBottom: '1px solid #141414' }}>
@@ -276,7 +282,7 @@ export default function AdminPanel() {
       </aside>
 
       {/* ═══════ MAIN CONTENT ═══════ */}
-      <main style={{ flex: 1, marginLeft: 220, padding: '2.5rem 3rem', minHeight: '100vh' }}>
+      <main className="admin-main">
 
         {/* Page header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
@@ -410,7 +416,8 @@ export default function AdminPanel() {
                         {(analytics.topProducts ?? []).length === 0 ? (
                           <p style={{ color: '#333', fontSize: '0.85rem' }}>No sales data yet.</p>
                         ) : (
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                          <div className="admin-table-wrapper">
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                             <thead>
                               <tr style={{ borderBottom: '1px solid #1a1a1a' }}>
                                 {['Product', 'Units', 'Revenue'].map((h, i) => (
@@ -431,6 +438,7 @@ export default function AdminPanel() {
                               ))}
                             </tbody>
                           </table>
+                          </div>
                         )}
                       </div>
 
@@ -472,8 +480,8 @@ export default function AdminPanel() {
                   <span style={{ fontSize: '0.72rem', color: '#333', letterSpacing: 1 }}>{filteredProducts.length} / {products.length} products</span>
                 </div>
 
-                <div style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <div className="admin-table-wrapper" style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
+                  <table style={{ minWidth: '900px', width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid #1a1a1a' }}>
                         {['', 'Product', 'Category', 'Price', 'Stock', 'Status', 'Actions'].map((h, i) => (
@@ -539,8 +547,8 @@ export default function AdminPanel() {
                   ))}
                 </div>
 
-                <div style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <div className="admin-table-wrapper" style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
+                  <table style={{ minWidth: '800px', width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid #1a1a1a' }}>
                         {['Order', 'Customer', 'Date', 'Items', 'Amount', 'Status', 'Action'].map((h, i) => (
@@ -592,8 +600,8 @@ export default function AdminPanel() {
                     Loading users...
                   </div>
                 ) : (
-                  <div style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                  <div className="admin-table-wrapper" style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
+                    <table style={{ minWidth: '700px', width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                       <thead>
                         <tr style={{ borderBottom: '1px solid #1a1a1a' }}>
                           {['User', 'Email', 'Role', 'Orders', 'Total Spent', 'Actions'].map((h, i) => (
@@ -713,7 +721,10 @@ export default function AdminPanel() {
                 <div><label style={LABEL}>Colors (CSV)</label><input style={INPUT} value={currentProduct.colors?.join ? currentProduct.colors.join(', ') : ''} onChange={e => setCurrentProduct({ ...currentProduct, colors: e.target.value as any })} placeholder="Black, White" /></div>
                 <div><label style={LABEL}>Stock *</label><input type="number" style={INPUT} value={currentProduct.stock ?? 0} onChange={e => setCurrentProduct({ ...currentProduct, stock: parseInt(e.target.value) || 0 })} required min={0} /></div>
               </div>
-              <div><label style={LABEL}>Product Image</label><input type="file" accept="image/*" style={{ ...INPUT, padding: '0.6rem' }} onChange={e => setImageFile(e.target.files?.[0] || null)} /></div>
+              <div className="grid-2">
+                <div><label style={LABEL}>Primary Product Image</label><input type="file" accept="image/*" style={{ ...INPUT, padding: '0.6rem' }} onChange={e => setImageFile(e.target.files?.[0] || null)} /></div>
+                <div><label style={LABEL}>Additional Size/Style Photos</label><input type="file" multiple accept="image/*" style={{ ...INPUT, padding: '0.6rem' }} onChange={e => setAdditionalImageFiles(e.target.files)} /></div>
+              </div>
               <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem', borderTop: '1px solid #1a1a1a', paddingTop: '1.2rem' }}>
                 <button type="button" onClick={() => setShowModal(false)} style={GHOST_BTN}>Cancel</button>
                 <button type="submit" style={{ ...PREMIUM_BTN, flex: 1, padding: '0.9rem', fontSize: '0.82rem' }}>{currentProduct.id ? 'Update Product' : 'Add Product'}</button>

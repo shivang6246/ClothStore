@@ -313,16 +313,12 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex' }}>
+    <div className="split-layout">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Left — Image Panel */}
-      <div style={{
-        flex: 1,
+      <div className="split-left" style={{
         backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url(https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=900&q=80)',
-        backgroundSize: 'cover', backgroundPosition: 'center',
-        display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '3rem',
-        position: 'relative', minHeight: '100vh',
       }}>
         <div>
           <div className="logo" onClick={() => window.location.href = '/'} style={{ cursor: 'pointer', color: '#f0ede6', fontSize: '1.8rem', letterSpacing: '14px', fontFamily: "'Cormorant Garamond', serif", textTransform: 'uppercase' }}>VOGUE</div>
@@ -349,10 +345,7 @@ export default function Login() {
       </div>
 
       {/* Right — Form */}
-      <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-        padding: '0 10%', backgroundColor: 'var(--bg-primary)', overflowY: 'auto',
-      }}>
+      <div className="split-right">
         <div style={{ maxWidth: '420px', width: '100%' }} className="fade-in" key={`${mode}-${signupOtpSent}`}>
           {/* Header */}
           <div style={{ marginBottom: '2.5rem' }}>
