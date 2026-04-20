@@ -50,6 +50,7 @@ public class ProductService {
         }
     }
 
+    @Cacheable(value = "productList", key = "#search + '-' + #category + '-' + #minPrice + '-' + #maxPrice + '-' + #sort", unless = "#search != null || #category != null || #minPrice != null || #maxPrice != null")
     public List<Product> getAllProducts(String search, String category, Double minPrice, Double maxPrice, String sort) {
         Specification<Product> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -118,12 +119,12 @@ public class ProductService {
         return productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
     }
 
-    @CacheEvict(value = "products", allEntries = true)
+    @CacheEvict(value = {"products", "productList"}, allEntries = true)
     public Product addProduct(Product product) {
         return productRepository.save(product);
     }
 
-    @CacheEvict(value = "products", key = "#id")
+    @CacheEvict(value = {"products", "productList"}, key = "#id")
     public Product updateProduct(Long id, Product details) {
         Product existing = getProductById(id);
         if (details.getName() != null) existing.setName(details.getName());
@@ -138,7 +139,7 @@ public class ProductService {
         return productRepository.save(existing);
     }
 
-    @CacheEvict(value = "products", key = "#id")
+    @CacheEvict(value = {"products", "productList"}, key = "#id")
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }

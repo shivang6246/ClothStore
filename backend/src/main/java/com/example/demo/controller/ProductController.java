@@ -5,6 +5,7 @@ import com.example.demo.service.FileStorageService;
 import com.example.demo.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,12 +26,18 @@ public class ProductController {
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(required = false) String sort) {
-        return ResponseEntity.ok(productService.getAllProducts(search, category, minPrice, maxPrice, sort));
+        List<Product> products = productService.getAllProducts(search, category, minPrice, maxPrice, sort);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=300")
+                .body(products);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getProductById(id));
+        Product product = productService.getProductById(id);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=600")
+                .body(product);
     }
 
     @PostMapping
