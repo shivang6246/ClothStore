@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: clothstore-backend
+    runtime: java
+    plan: free
+    buildCommand: cd backend && mvn clean package -DskipTests
+    startCommand: cd backend && java -jar target/demo-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: JAVA_VERSION
+        value: 17
+      - key: PORT
+        value: 8080
+      - key: DB_URL
+        fromDatabase:
+          name: postgres
+          property: connectionString
+      - key: DB_USERNAME
+        fromDatabase:
+          name: postgres
+          property: username
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: postgres
+          property: password
