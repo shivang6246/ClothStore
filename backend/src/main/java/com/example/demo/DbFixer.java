@@ -2,14 +2,18 @@ package com.example.demo;
 
 import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
+@ConditionalOnProperty(name = "app.db.fixer.enabled", havingValue = "true")
 public class DbFixer implements CommandLineRunner {
 
     private final ProductRepository productRepo;
@@ -44,6 +48,12 @@ public class DbFixer implements CommandLineRunner {
         imgMap.put("knit lounge set",          "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80");
 
         List<Product> products = productRepo.findAll();
+        Set<String> existingNames = products.stream()
+                .map(Product::getName)
+                .filter(name -> name != null && !name.isBlank())
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
         for (Product p : products) {
             String nameLower = p.getName() != null ? p.getName().toLowerCase() : "";
             String url = imgMap.get(nameLower);
@@ -55,24 +65,23 @@ public class DbFixer implements CommandLineRunner {
         }
 
         // Upsert new products that may not exist yet (checked by name)
-        upsert("Trench Coat",      "Outerwear", "Classic double-breasted trench coat with belt and epaulettes.",      215.00, imgMap.get("trench coat"),       List.of("S","M","L","XL"),       List.of("Beige","Black","Navy"));
-        upsert("Puffer Jacket",    "Outerwear", "Lightweight down-fill puffer jacket with a packable design.",       135.00, imgMap.get("puffer jacket"),     List.of("S","M","L","XL","XXL"), List.of("Olive","Black","Navy"));
-        upsert("Shearling Coat",   "Outerwear", "Genuine shearling coat with suede exterior and plush wool lining.", 380.00, imgMap.get("shearling coat"),    List.of("M","L","XL"),           List.of("Camel","Ivory"));
-        upsert("Navy Slim Blazer", "Blazers",   "Slim-cut two-button blazer in a fine wool blend.",                  175.00, imgMap.get("navy slim blazer"),  List.of("S","M","L","XL"),       List.of("Navy","Charcoal"));
-        upsert("Linen Blazer",     "Blazers",   "Unstructured linen blazer for a relaxed, sophisticated look.",      145.00, imgMap.get("linen blazer"),      List.of("S","M","L","XL"),       List.of("Ecru","Sage","White"));
-        upsert("Check Blazer",     "Blazers",   "Heritage glen-check blazer with notch lapels and patch pockets.",   190.00, imgMap.get("check blazer"),      List.of("S","M","L","XL"),       List.of("Grey","Brown"));
-        upsert("Slip Midi Dress",  "Dresses",   "Bias-cut satin slip dress with adjustable straps.",                 110.00, imgMap.get("slip midi dress"),   List.of("XS","S","M","L"),       List.of("Black","Champagne","Dusty Rose"));
-        upsert("Wrap Maxi Dress",  "Dresses",   "Fluid wrap-front maxi dress with a flattering V-neckline.",         89.00,  imgMap.get("wrap maxi dress"),   List.of("XS","S","M","L","XL"),  List.of("Floral","Navy","Terracotta"));
-        upsert("Linen Co-ord Set", "Sets",      "Matching cropped top and wide-leg trouser set in breathable linen.",125.00, imgMap.get("linen co-ord set"),  List.of("XS","S","M","L"),       List.of("White","Sand","Sage"));
-        upsert("Knit Lounge Set",  "Sets",      "Soft-knit relaxed top and jogger set.",                             98.00,  imgMap.get("knit lounge set"),   List.of("S","M","L","XL"),       List.of("Cream","Charcoal","Dusty Lilac"));
+        upsert(existingNames, "Trench Coat",      "Outerwear", "Classic double-breasted trench coat with belt and epaulettes.",      215.00, imgMap.get("trench coat"),       List.of("S","M","L","XL"),       List.of("Beige","Black","Navy"));
+        upsert(existingNames, "Puffer Jacket",    "Outerwear", "Lightweight down-fill puffer jacket with a packable design.",       135.00, imgMap.get("puffer jacket"),     List.of("S","M","L","XL","XXL"), List.of("Olive","Black","Navy"));
+        upsert(existingNames, "Shearling Coat",   "Outerwear", "Genuine shearling coat with suede exterior and plush wool lining.", 380.00, imgMap.get("shearling coat"),    List.of("M","L","XL"),           List.of("Camel","Ivory"));
+        upsert(existingNames, "Navy Slim Blazer", "Blazers",   "Slim-cut two-button blazer in a fine wool blend.",                  175.00, imgMap.get("navy slim blazer"),  List.of("S","M","L","XL"),       List.of("Navy","Charcoal"));
+        upsert(existingNames, "Linen Blazer",     "Blazers",   "Unstructured linen blazer for a relaxed, sophisticated look.",      145.00, imgMap.get("linen blazer"),      List.of("S","M","L","XL"),       List.of("Ecru","Sage","White"));
+        upsert(existingNames, "Check Blazer",     "Blazers",   "Heritage glen-check blazer with notch lapels and patch pockets.",   190.00, imgMap.get("check blazer"),      List.of("S","M","L","XL"),       List.of("Grey","Brown"));
+        upsert(existingNames, "Slip Midi Dress",  "Dresses",   "Bias-cut satin slip dress with adjustable straps.",                 110.00, imgMap.get("slip midi dress"),   List.of("XS","S","M","L"),       List.of("Black","Champagne","Dusty Rose"));
+        upsert(existingNames, "Wrap Maxi Dress",  "Dresses",   "Fluid wrap-front maxi dress with a flattering V-neckline.",         89.00,  imgMap.get("wrap maxi dress"),   List.of("XS","S","M","L","XL"),  List.of("Floral","Navy","Terracotta"));
+        upsert(existingNames, "Linen Co-ord Set", "Sets",      "Matching cropped top and wide-leg trouser set in breathable linen.",125.00, imgMap.get("linen co-ord set"),  List.of("XS","S","M","L"),       List.of("White","Sand","Sage"));
+        upsert(existingNames, "Knit Lounge Set",  "Sets",      "Soft-knit relaxed top and jogger set.",                             98.00,  imgMap.get("knit lounge set"),   List.of("S","M","L","XL"),       List.of("Cream","Charcoal","Dusty Lilac"));
 
         System.out.println("====== DB IMAGES UPDATED (per-product unique URLs) ======");
     }
 
-    private void upsert(String name, String category, String description, double price,
+    private void upsert(Set<String> existingNames, String name, String category, String description, double price,
                         String imageUrl, List<String> sizes, List<String> colors) {
-        boolean exists = productRepo.findAll().stream().anyMatch(p -> name.equalsIgnoreCase(p.getName()));
-        if (!exists) {
+        if (!existingNames.contains(name.toLowerCase())) {
             Product p = new Product();
             p.setName(name);
             p.setCategory(category);
@@ -84,6 +93,7 @@ public class DbFixer implements CommandLineRunner {
             p.setColors(colors);
             p.setStock(50);
             productRepo.save(p);
+            existingNames.add(name.toLowerCase());
             System.out.println("✓ Inserted: " + name);
         }
     }
