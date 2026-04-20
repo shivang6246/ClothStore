@@ -122,7 +122,8 @@ export default function Collection() {
             <div style={{ width: 28, height: 28, border: '1.5px solid #1a1a1a', borderTopColor: '#c9a96e', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 1rem' }} />
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
             Loading collection...
-          </        ) : displayProducts.length === 0 ? (
+          </div>
+        ) : displayProducts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '6rem', color: '#444' }}>
             <p style={{ fontSize: '0.8rem', letterSpacing: '2px' }}>NO PIECES FOUND</p>
           </div>
@@ -210,8 +211,6 @@ export default function Collection() {
               </div>
             )}
           </>
-        )}
-/div>
         )}
       </div>
 
