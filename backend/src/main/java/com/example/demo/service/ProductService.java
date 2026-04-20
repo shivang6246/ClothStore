@@ -5,6 +5,8 @@ import com.example.demo.repository.ProductRepository;
 import com.example.demo.dto.PageResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Sort;
@@ -17,14 +19,23 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
 
     private final ProductRepository productRepository;
+    @Value("${app.seed.products.enabled:false}")
+    private boolean seedProductsEnabled;
 
     @PostConstruct
     public void initProducts() {
-        if (productRepository.count() == 0) {
-            productRepository.saveAll(List.of(
+        if (!seedProductsEnabled) {
+            log.info("Product seed is disabled. Skipping initProducts.");
+            return;
+        }
+
+        try {
+            if (productRepository.count() == 0) {
+                productRepository.saveAll(List.of(
                 Product.builder().name("Classic White Tee").category("T-shirt").sizes(Arrays.asList("S","M","L","XL")).colors(Arrays.asList("White","Black","Grey")).description("Premium organic cotton crew-neck t-shirt with a relaxed fit. Perfect for layering or wearing on its own.").price(29.99).imageUrl("https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600").build(),
                 Product.builder().name("Denim Jacket").category("Jacket").sizes(Arrays.asList("M","L","XL")).colors(Arrays.asList("Blue","Black")).description("Vintage-wash denim jacket with classic button front closure. A timeless wardrobe essential for every season.").price(89.50).imageUrl("https://images.unsplash.com/photo-1551537482-f209bfc73dd3?w=600").build(),
                 Product.builder().name("Slim Fit Chinos").category("Pants").sizes(Arrays.asList("30","32","34","36")).colors(Arrays.asList("Khaki","Navy","Black")).description("Modern slim-fit chinos crafted from stretch cotton twill. Comfortable enough for all-day wear.").price(49.00).imageUrl("https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600").build(),
@@ -45,8 +56,12 @@ public class ProductService {
                 Product.builder().name("Wrap Maxi Dress").category("Dresses").sizes(Arrays.asList("XS","S","M","L","XL")).colors(Arrays.asList("Floral","Navy","Terracotta")).description("Fluid wrap-front maxi dress with a flattering V-neckline. Versatile elegance for any occasion.").price(89.00).imageUrl("https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=600&q=80").build(),
                 Product.builder().name("Linen Co-ord Set").category("Sets").sizes(Arrays.asList("XS","S","M","L")).colors(Arrays.asList("White","Sand","Sage")).description("Matching cropped top and wide-leg trouser set in breathable linen. The ultimate summer two-piece.").price(125.00).imageUrl("https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=600&q=80").build(),
                 Product.builder().name("Knit Lounge Set").category("Sets").sizes(Arrays.asList("S","M","L","XL")).colors(Arrays.asList("Cream","Charcoal","Dusty Lilac")).description("Soft-knit relaxed top and jogger set. Luxurious comfort that doesn't compromise on style.").price(98.00).imageUrl("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80").build()
-            ));
-            System.out.println("✓ Inserted 20 seed products into database.");
+                ));
+                log.info("Inserted 20 seed products into database.");
+            }
+        } catch (Exception ex) {
+            // Do not fail application startup if seed data insert fails in deployment.
+            log.error("Product seed failed. Continuing startup without seed data.", ex);
         }
     }
 
