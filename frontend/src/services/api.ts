@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { cacheManager } from '../utils/cache';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
@@ -29,5 +30,29 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Cache GET requests automatically
+api.interceptors.response.use((response) => {
+  if (response.config.method === 'get' && response.status === 200) {
+    const cacheKey = `${response.config.url}`;
+    cacheManager.set(cacheKey, response.data);
+  }
+  return response;
+});
+
+// Try cache before making request
+const originalGet = api.get;
+api.get = function (url: string, config?: any) {
+  const cacheKey = `${url}`;
+  const cached = cacheManager.get(cacheKey);
+
+  if (cached) {
+    // Return cached response immediately
+    return Promise.resolve({ data: cached, status: 200, statusText: 'OK (CACHED)', config, headers: {} });
+  }
+
+  // Make actual request if not cached
+  return originalGet.call(this, url, config);
+};
 
 export default api;
