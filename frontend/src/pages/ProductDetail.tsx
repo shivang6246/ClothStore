@@ -23,14 +23,32 @@ export default function ProductDetail() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    api.get(`/api/products/${id}`)
+    setLoading(true);
+    setFetchError('');
+    setProduct(null);
+
+    const productId = Number(id);
+    if (!id || Number.isNaN(productId) || productId <= 0) {
+      setFetchError('Invalid product id.');
+      setLoading(false);
+      return;
+    }
+
+    api.get(`/api/products/${productId}`)
       .then(res => {
+        if (!res.data || Array.isArray(res.data)) {
+          throw new Error('Unexpected product payload');
+        }
         setProduct(res.data);
         setMainImage(getPremiumImage(res.data));
         if (res.data.sizes?.length) setSize(res.data.sizes[0]);
         if (res.data.colors?.length) setColor(res.data.colors[0]);
       })
-      .catch(() => setFetchError('Product could not be found.'))
+      .catch((error) => {
+        const status = error?.response?.status;
+        if (status === 404) setFetchError('Product could not be found.');
+        else setFetchError('Unable to load product details.');
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
