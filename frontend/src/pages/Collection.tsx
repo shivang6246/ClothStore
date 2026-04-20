@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../services/api';
+import api, { apiWithCache } from '../services/api';
 
 const CATEGORIES = ['All', 'T-shirt', 'Shirt', 'Jacket', 'Pants', 'Blazer', 'Outerwear', 'Sets', 'Dresses', 'Footwear'];
 
@@ -19,7 +19,7 @@ export default function Collection() {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   useEffect(() => {
-    api.get('/api/products').then(r => setProducts(r.data)).finally(() => setLoading(false));
+    apiWithCache.get('/api/products').then(r => setProducts(r.data)).finally(() => setLoading(false));
   }, []);
 
   const filtered = products

@@ -31,7 +31,7 @@ api.interceptors.response.use(
   }
 );
 
-// Cache GET requests automatically
+// Cache GET responses automatically
 api.interceptors.response.use((response) => {
   if (response.config.method === 'get' && response.status === 200) {
     const cacheKey = `${response.config.url}`;
@@ -40,19 +40,20 @@ api.interceptors.response.use((response) => {
   return response;
 });
 
-// Try cache before making request
-const originalGet = api.get;
-api.get = function (url: string, config?: any) {
-  const cacheKey = `${url}`;
-  const cached = cacheManager.get(cacheKey);
+// Wrapper function to check cache before making requests
+export const apiWithCache = {
+  get: async <T = any>(url: string, config?: any): Promise<any> => {
+    const cacheKey = url;
+    const cached = cacheManager.get(cacheKey);
 
-  if (cached) {
-    // Return cached response immediately
-    return Promise.resolve({ data: cached, status: 200, statusText: 'OK (CACHED)', config, headers: {} });
-  }
+    if (cached) {
+      // Return cached response immediately
+      return Promise.resolve({ data: cached, status: 200, statusText: 'OK (CACHED)', config, headers: {} });
+    }
 
-  // Make actual request if not cached
-  return originalGet.call(this, url, config);
+    // Make actual request if not cached
+    return api.get<T>(url, config);
+  },
 };
 
 export default api;

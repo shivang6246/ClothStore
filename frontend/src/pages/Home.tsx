@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
+import api, { apiWithCache } from '../services/api';
 import { useStore } from '../context/StoreContext';
 import { getPremiumImage } from '../utils/imageUtils';
 
@@ -63,7 +63,7 @@ export default function Home() {
   }, []);
 
   const fetchProducts = () => {
-    api.get<Product[]>('/api/products')
+    apiWithCache.get<Product[]>('/api/products')
       .then(res => setProducts(res.data))
       .catch(err => console.error("Failed to fetch products:", err));
   };
