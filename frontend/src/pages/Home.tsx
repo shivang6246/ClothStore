@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api, { apiWithCache } from '../services/api';
+import { apiWithCache } from '../services/api';
 import { useStore } from '../context/StoreContext';
 import { getPremiumImage } from '../utils/imageUtils';
 

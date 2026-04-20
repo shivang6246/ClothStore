@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import api, { apiWithCache } from '../services/api';
+import { apiWithCache } from '../services/api';
 
 const CATEGORIES = ['All', 'T-shirt', 'Shirt', 'Jacket', 'Pants', 'Blazer', 'Outerwear', 'Sets', 'Dresses', 'Footwear'];
 
