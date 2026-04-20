@@ -1,8 +1,14 @@
 import axios from 'axios';
 import { cacheManager } from '../utils/cache';
 
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+const isLocalhost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const fallbackApiUrl = isLocalhost ? 'http://localhost:8080' : 'https://clothstore-7jwr.onrender.com';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
+  baseURL: (configuredApiUrl || fallbackApiUrl).replace(/\/$/, ''),
 });
 
 // Attach JWT to every request
