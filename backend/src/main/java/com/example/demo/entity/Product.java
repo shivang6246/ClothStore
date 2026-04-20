@@ -25,17 +25,17 @@ public class Product {
     @Builder.Default
     private Integer stock = 0;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "product_sizes", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "size")
     private List<String> sizes;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "product_colors", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "color")
     private List<String> colors;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "additional_image_url")
     private List<String> multipleImages;
