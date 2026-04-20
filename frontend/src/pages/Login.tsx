@@ -318,7 +318,7 @@ export default function Login() {
 
       {/* Left — Image Panel */}
       <div className="split-left" style={{
-        backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url(https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=900&q=80)',
+        backgroundImage: 'url("https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=800&h=1200&q=80")',
       }}>
         <div>
           <div className="logo" onClick={() => window.location.href = '/'} style={{ cursor: 'pointer', color: '#f0ede6', fontSize: '1.8rem', letterSpacing: '14px', fontFamily: "'Cormorant Garamond', serif", textTransform: 'uppercase' }}>VOGUE</div>

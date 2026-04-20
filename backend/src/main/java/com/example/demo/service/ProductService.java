@@ -2,8 +2,11 @@ package com.example.demo.service;
 
 import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.dto.PageResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -75,14 +78,52 @@ public class ProductService {
         return productRepository.findAll(spec, sorting);
     }
 
+    public PageResponse<Product> getAllProductsPaginated(String search, String category, Double minPrice, Double maxPrice, String sort, int page, int pageSize) {
+        Specification<Product> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (search != null && !search.isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + search.toLowerCase() + "%"));
+            }
+            if (category != null && !category.isEmpty()) {
+                predicates.add(cb.equal(root.get("category"), category));
+            }
+            if (minPrice != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), minPrice));
+            }
+            if (maxPrice != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Sort sorting = Sort.unsorted();
+        if ("price_asc".equals(sort)) {
+            sorting = Sort.by("price").ascending();
+        } else if ("price_desc".equals(sort)) {
+            sorting = Sort.by("price").descending();
+        }
+
+        long total = productRepository.count(spec);
+        int offset = Math.max(0, page) * pageSize;
+        List<Product> products = productRepository.findAll(spec, sorting).stream()
+                .skip(offset)
+                .limit(pageSize)
+                .toList();
+
+        return new PageResponse<>(products, page, pageSize, total);
+    }
+
+    @Cacheable(value = "products", key = "#id")
     public Product getProductById(Long id) {
         return productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     public Product addProduct(Product product) {
         return productRepository.save(product);
     }
 
+    @CacheEvict(value = "products", key = "#id")
     public Product updateProduct(Long id, Product details) {
         Product existing = getProductById(id);
         if (details.getName() != null) existing.setName(details.getName());
@@ -97,6 +138,7 @@ public class ProductService {
         return productRepository.save(existing);
     }
 
+    @CacheEvict(value = "products", key = "#id")
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }
