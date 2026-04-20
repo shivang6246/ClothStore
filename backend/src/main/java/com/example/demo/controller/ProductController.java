@@ -20,12 +20,21 @@ public class ProductController {
     private final FileStorageService fileStorageService;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts(
+    public ResponseEntity<?> getAllProducts(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) String sort) {
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false, defaultValue = "12") Integer size) {
+        
+        if (page != null) {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CACHE_CONTROL, "public, max-age=300")
+                    .body(productService.getAllProductsPaginated(search, category, minPrice, maxPrice, sort, page, size));
+        }
+        
         List<Product> products = productService.getAllProducts(search, category, minPrice, maxPrice, sort);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CACHE_CONTROL, "public, max-age=300")
