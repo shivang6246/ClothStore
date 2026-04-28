@@ -208,8 +208,14 @@ export default function AdminPanel() {
   };
   const handleDeleteUser = async (id: number) => {
     if (!confirm('Delete this user? This cannot be undone.')) return;
-    await api.delete(`/api/admin/users/${id}`);
-    fetchUsers();
+    try {
+      const res = await api.delete(`/api/admin/users/${id}`);
+      alert(res.data.message || 'User deleted successfully.');
+      fetchUsers();
+    } catch (e: any) {
+      console.error('Delete failed:', e);
+      alert(e.response?.data?.message || 'Failed to delete user.');
+    }
   };
   const handleBulkRestock = async () => {
     if (!window.confirm("Set all products to 50 units stock?")) return;

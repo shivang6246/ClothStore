@@ -22,4 +22,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
            "(SELECT MAX(m2.id) FROM ChatMessage m2 GROUP BY m2.conversationEmail) " +
            "ORDER BY m.timestamp DESC")
     List<ChatMessage> findLatestMessagePerConversation();
+
+    void deleteByConversationEmail(String conversationEmail);
 }
