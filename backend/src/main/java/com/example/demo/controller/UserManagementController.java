@@ -51,13 +51,19 @@ public class UserManagementController {
     }
 
     @PatchMapping("/{id}/role")
+    @org.springframework.transaction.annotation.Transactional
     @CacheEvict(value = "usersList", allEntries = true)
-    public ResponseEntity<?> updateRole(@PathVariable Long id, @RequestParam String role) {
+    public ResponseEntity<?> updateRole(@PathVariable Long id, @RequestParam("role") String role) {
+        System.out.println("Updating role for user " + id + " to " + role);
         return userRepository.findById(id)
             .map(u -> {
                 u.setRole(role.toUpperCase());
-                userRepository.save(u);
-                return ResponseEntity.ok(Map.of("message", "Role updated to " + role.toUpperCase()));
+                User saved = userRepository.save(u);
+                System.out.println("Saved user: " + saved.getEmail() + " with role: " + saved.getRole());
+                return ResponseEntity.ok(Map.of(
+                    "message", "Role updated to " + role.toUpperCase(),
+                    "newRole", saved.getRole()
+                ));
             })
             .orElse(ResponseEntity.notFound().build());
     }

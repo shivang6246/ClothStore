@@ -192,10 +192,19 @@ export default function AdminPanel() {
   const handleToggleCoupon = async (id: number) => { await api.patch(`/api/admin/coupons/${id}/toggle`); fetchCoupons(); };
   const handleDeleteCoupon = async (id: number) => { if (confirm('Delete this coupon?')) { await api.delete(`/api/admin/coupons/${id}`); fetchCoupons(); } };
   const handlePromoteUser = async (id: number, currentRole: string) => {
-    const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
-    if (!confirm(`Change role to ${newRole}?`)) return;
-    await api.patch(`/api/admin/users/${id}/role?role=${newRole}`);
-    fetchUsers();
+    const isCurrentlyAdmin = currentRole?.toUpperCase() === 'ADMIN';
+    const newRole = isCurrentlyAdmin ? 'CUSTOMER' : 'ADMIN';
+    
+    if (!confirm(`Change role from ${currentRole} to ${newRole}?`)) return;
+    
+    try {
+      const res = await api.patch(`/api/admin/users/${id}/role?role=${newRole}`);
+      alert(res.data.message || `User successfully changed to ${newRole}`);
+      fetchUsers();
+    } catch (e: any) {
+      console.error('Promotion failed:', e);
+      alert(e.response?.data?.message || 'Failed to update user role.');
+    }
   };
   const handleDeleteUser = async (id: number) => {
     if (!confirm('Delete this user? This cannot be undone.')) return;
