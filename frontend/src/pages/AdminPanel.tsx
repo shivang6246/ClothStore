@@ -103,7 +103,7 @@ export default function AdminPanel() {
   const [additionalImageFiles, setAdditionalImageFiles] = useState<FileList | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [orderFilter, setOrderFilter] = useState('ALL');
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [_deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   // ── Chat state ────────────────────────────────────────────────────────────
   const [chatConversations, setChatConversations] = useState<any[]>([]);
