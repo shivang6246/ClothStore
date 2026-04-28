@@ -103,11 +103,15 @@ public class OtpService {
         System.out.println("Generated Password Reset OTP for " + email + ": " + otp);
         System.out.println("=========================================");
         
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Vogue Apparel Password Reset Code");
-        message.setText("Your password reset code is: " + otp + ". It is valid for 5 minutes.");
-        mailSender.send(message);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(email);
+            message.setSubject("Vogue Apparel Password Reset Code");
+            message.setText("Your password reset code is: " + otp + ". It is valid for 5 minutes.");
+            mailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Failed to send reset email to " + email + ": " + e.getMessage());
+        }
     }
 
     @Transactional

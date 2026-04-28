@@ -111,7 +111,9 @@ public class AuthController {
 
         userRepository.save(user);
 
-        String token = jwtService.generateToken(Map.of("role", role), user.getEmail());
+        java.util.Map<String, Object> claims = new java.util.HashMap<>();
+        claims.put("role", role);
+        String token = jwtService.generateToken(claims, user.getEmail());
         return ResponseEntity.ok(AuthResponse.builder()
             .token(token)
             .role(role)
@@ -139,7 +141,9 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("message", "Incorrect password. Please try again."));
         }
 
-        String token = jwtService.generateToken(Map.of("role", user.getRole()), user.getEmail());
+        java.util.Map<String, Object> claims = new java.util.HashMap<>();
+        claims.put("role", user.getRole());
+        String token = jwtService.generateToken(claims, user.getEmail());
         return ResponseEntity.ok(AuthResponse.builder()
             .token(token)
             .role(user.getRole())
