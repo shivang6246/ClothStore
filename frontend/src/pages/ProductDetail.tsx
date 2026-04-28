@@ -170,14 +170,14 @@ export default function ProductDetail() {
         <div className="pd-anim" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div style={{
             width: '100%', aspectRatio: '3/4', backgroundColor: '#111',
-            backgroundImage: `url(${mainImage})`, backgroundSize: 'cover', backgroundPosition: 'center top',
+            backgroundImage: `url(${mainImage}), url('https://picsum.photos/seed/vogue_main/800/1000')`, backgroundSize: 'cover', backgroundPosition: 'center top',
             transition: 'background-image 0.35s ease',
           }} />
           {allImages.length > 1 && (
             <div style={{ display: 'flex', gap: '0.6rem' }}>
               {allImages.map((img: string, i: number) => (
                 <div key={i} onClick={() => setMainImage(img)} className="thumb-hover" style={{
-                  width: 66, height: 84, backgroundImage: `url(${img})`, backgroundSize: 'cover', backgroundPosition: 'center',
+                  width: 66, height: 84, backgroundImage: `url(${img}), url('https://picsum.photos/seed/vogue_thumb/100/100')`, backgroundSize: 'cover', backgroundPosition: 'center',
                   cursor: 'pointer',
                   border: mainImage === img ? '0.5px solid #c9a96e' : '0.5px solid #222',
                   opacity: mainImage === img ? 1 : 0.45, transition: 'all 0.25s',

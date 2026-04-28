@@ -14,9 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @RestController
 @RequestMapping("/api/checkout")
@@ -38,6 +39,7 @@ public class CheckoutController {
 
     @PostMapping("/process")
     @Transactional
+    @CacheEvict(value = {"analytics", "allOrders"}, allEntries = true)
     public ResponseEntity<?> processCheckout(@RequestBody CheckoutRequest request) {
         User user = getCurrentUser();
         List<CartItem> cartItems = cartItemRepository.findByUserId(user.getId());
@@ -136,6 +138,7 @@ public class CheckoutController {
     // ── USER: Cancel their own order (only if PAID) ──────────────────────────
     @PutMapping("/orders/{orderId}/cancel")
     @Transactional
+    @CacheEvict(value = {"analytics", "allOrders"}, allEntries = true)
     public ResponseEntity<?> cancelOrder(@PathVariable Long orderId) {
         logger.info("🔴 CANCEL REQUEST received for Order #" + orderId);
         User user = getCurrentUser();
@@ -173,13 +176,36 @@ public class CheckoutController {
 
     // ── ADMIN: All orders ─────────────────────────────────────────────────────
     @GetMapping("/admin/all")
-    public ResponseEntity<List<Order>> getAllOrdersAdmin() {
-        return ResponseEntity.ok(orderRepository.findAll(
-            org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt")));
+    @Cacheable(value = "allOrders")
+    public List<Map<String, Object>> getAllOrdersAdmin() {
+        List<Order> orders = orderRepository.findAll(
+            org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+        
+        return orders.stream().map(o -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", o.getId());
+            map.put("totalAmount", o.getTotalAmount());
+            map.put("status", o.getStatus());
+            map.put("createdAt", o.getCreatedAt());
+            
+            Map<String, String> userMap = new HashMap<>();
+            userMap.put("fullName", o.getUser() != null ? o.getUser().getFullName() : "Guest");
+            userMap.put("email", o.getUser() != null ? o.getUser().getEmail() : "");
+            map.put("user", userMap);
+            
+            // Return dummy items list with correct length for the table
+            List<Map<String, String>> itemDummies = new ArrayList<>();
+            int count = o.getItems() != null ? o.getItems().size() : 0;
+            for(int i=0; i<count; i++) itemDummies.add(new HashMap<>());
+            map.put("items", itemDummies);
+            
+            return map;
+        }).collect(Collectors.toList());
     }
 
     // ── ADMIN: Update status + trigger email ──────────────────────────────────
     @PutMapping("/admin/{orderId}/status")
+    @CacheEvict(value = {"analytics", "allOrders"}, allEntries = true)
     public ResponseEntity<Order> updateOrderStatus(@PathVariable Long orderId, @RequestParam String status) {
         logger.info("🔧 ADMIN STATUS UPDATE: Order #{} → {}", orderId, status);
         Order order = orderRepository.findById(orderId).orElseThrow();

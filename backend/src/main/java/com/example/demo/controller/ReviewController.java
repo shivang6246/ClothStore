@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -30,7 +32,8 @@ public class ReviewController {
 
     /** GET /api/reviews/{productId} — public: returns reviews + stats */
     @GetMapping("/{productId}")
-    public ResponseEntity<Map<String, Object>> getReviews(@PathVariable Long productId) {
+    @Cacheable(value = "reviews", key = "#productId")
+    public Map<String, Object> getReviews(@PathVariable Long productId) {
         List<Review> reviews = reviewRepo.findByProductIdOrderByCreatedAtDesc(productId);
         Double avg = reviewRepo.findAverageRatingByProductId(productId);
         Long total = reviewRepo.countByProductId(productId);
@@ -48,11 +51,12 @@ public class ReviewController {
         result.put("averageRating", avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
         result.put("totalReviews", total);
         result.put("distribution", distribution);
-        return ResponseEntity.ok(result);
+        return result;
     }
 
     /** POST /api/reviews/{productId} — authenticated: submit or update review */
     @PostMapping("/{productId}")
+    @CacheEvict(value = "reviews", key = "#productId")
     public ResponseEntity<Review> submitReview(
             @PathVariable Long productId,
             @RequestBody Map<String, Object> body) {
@@ -79,6 +83,7 @@ public class ReviewController {
 
     /** DELETE /api/reviews/{productId} — user deletes their own review */
     @DeleteMapping("/{productId}")
+    @CacheEvict(value = "reviews", key = "#productId")
     public ResponseEntity<Void> deleteReview(@PathVariable Long productId) {
         User user = getCurrentUser();
         reviewRepo.findByProductIdAndUserId(productId, user.getId())

@@ -147,7 +147,7 @@ export default function AdminPanel() {
   const fetchAnalytics = async () => { setAnalyticsLoading(true); try { const r = await api.get('/api/admin/analytics'); setAnalytics(r.data); } catch (e) { console.error(e); } finally { setAnalyticsLoading(false); } };
   const fetchCoupons = async () => { try { const r = await api.get('/api/admin/coupons'); setCoupons(r.data); } catch (e) { console.error(e); } };
   const fetchUsers = async () => { setUsersLoading(true); try { const r = await api.get('/api/admin/users'); setUsers(r.data); } catch (e) { console.error(e); } finally { setUsersLoading(false); } };
-  const fetchProducts = () => api.get('/api/products').then(r => setProducts(r.data));
+  const fetchProducts = () => api.get(`/api/products?t=${Date.now()}`).then(r => setProducts(r.data));
   const fetchOrders = () => api.get('/api/checkout/admin/all').then(r => setOrders(r.data));
 
   const handleSave = async (e: React.FormEvent) => {
@@ -202,6 +202,32 @@ export default function AdminPanel() {
     await api.delete(`/api/admin/users/${id}`);
     fetchUsers();
   };
+  const handleBulkRestock = async () => {
+    if (!window.confirm("Set all products to 50 units stock?")) return;
+    try {
+      await api.post('/api/products/bulk-restock');
+      fetchProducts();
+      setAnalytics(null); // Force analytics to re-fetch on next visit
+    } catch {
+      alert("Failed to restock.");
+    }
+  };
+
+  const handleFixImages = async () => {
+    if (!window.confirm("Replace all broken/outdated images with high-quality stock photos?")) return;
+    setLoading(true);
+    try {
+      await api.post('/api/products/fix-images');
+      fetchProducts();
+      alert("Success! High-end fashion images have been applied.");
+      window.location.reload(); // Hard refresh to clear any cached random images
+    } catch {
+      alert("Failed to fix images.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = () => { localStorage.clear(); window.location.href = '/login'; };
 
   // ── Chat functions ──────────────────────────────────────────────────────
@@ -254,6 +280,7 @@ export default function AdminPanel() {
 
   const selectConversation = async (email: string) => {
     setSelectedConvo(email);
+    if (!email) return;
     try {
       const res = await api.get(`/api/chat/history/${email}`);
       setChatMessages(res.data);
@@ -329,7 +356,7 @@ export default function AdminPanel() {
   const MODAL_BOX: React.CSSProperties = { background: '#111', border: '1px solid #1e1e1e', borderRadius: 16, padding: '2.5rem', width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#0a0a0a', fontFamily: "'Inter', sans-serif", color: '#f0ede6' }}>
+    <div className="admin-layout" style={{ minHeight: '100vh', display: 'flex', background: '#0a0a0a', fontFamily: "'Inter', sans-serif", color: '#f0ede6' }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
@@ -346,13 +373,13 @@ export default function AdminPanel() {
       <aside className="admin-sidebar">
 
         {/* Brand */}
-        <div style={{ padding: '2rem 1.5rem 1.5rem', borderBottom: '1px solid #141414' }}>
+        <div className="admin-sidebar-header" style={{ padding: '2rem 1.5rem 1.5rem', borderBottom: '1px solid #141414' }}>
           <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '1.5rem', fontWeight: 300, letterSpacing: 10, color: '#f0ede6', marginBottom: 2 }}>VOGUE</div>
           <div style={{ fontSize: '0.6rem', letterSpacing: '3px', textTransform: 'uppercase', color: '#666' }}>Admin Portal</div>
         </div>
 
         {/* User */}
-        <div style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid #141414', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+        <div className="admin-sidebar-user" style={{ padding: '1.2rem 1.5rem', borderBottom: '1px solid #141414', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
           <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg,#c9a96e,#7c5a2e)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.9rem', color: '#0a0a0a', flexShrink: 0 }}>
             {adminName.charAt(0).toUpperCase()}
           </div>
@@ -387,10 +414,17 @@ export default function AdminPanel() {
               )}
             </button>
           ))}
+          
+          <Link to="/" className="mobile-only-btn" style={{ textDecoration: 'none', color: '#777', fontSize: '0.7rem', fontWeight: 500, padding: '0.5rem 0.8rem', borderBottom: '2px solid transparent', whiteSpace: 'nowrap' }}>
+            View Store
+          </Link>
+          <button onClick={handleLogout} className="mobile-only-btn" style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.7rem', fontWeight: 600, padding: '0.5rem 0.8rem', borderBottom: '2px solid transparent', whiteSpace: 'nowrap', cursor: 'pointer' }}>
+            Logout
+          </button>
         </nav>
 
         {/* Footer links */}
-        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #141414', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div className="admin-sidebar-footer" style={{ padding: '1rem 1.5rem', borderTop: '1px solid #141414', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#777', textDecoration: 'none', fontSize: '0.78rem', transition: 'color 0.15s' }}
             onMouseEnter={e => (e.currentTarget.style.color = '#f0ede6')} onMouseLeave={e => (e.currentTarget.style.color = '#777')}>
             <span>↗</span> View Store
@@ -406,10 +440,10 @@ export default function AdminPanel() {
       <main className="admin-main">
 
         {/* Page header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
+        <div className="flex-stack" style={{ justifyContent: 'space-between', marginBottom: '2rem' }}>
           <div>
-            <div style={{ fontSize: '0.65rem', letterSpacing: '3px', textTransform: 'uppercase', color: '#888', marginBottom: 6 }}>Admin Panel</div>
-            <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '2rem', fontWeight: 300, margin: 0, color: '#f0ede6', letterSpacing: 1 }}>
+            <div style={{ fontSize: '0.6rem', letterSpacing: '3px', textTransform: 'uppercase', color: '#888', marginBottom: 4 }}>Admin Panel</div>
+            <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '1.8rem', fontWeight: 300, margin: 0, color: '#f0ede6', letterSpacing: 1 }}>
               {activeTab === 'dashboard' ? 'Dashboard'
                 : activeTab === 'analytics' ? 'Analytics'
                 : activeTab === 'products' ? 'Products'
@@ -419,19 +453,16 @@ export default function AdminPanel() {
                 : 'Coupons'}
             </h1>
           </div>
-          <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {activeTab === 'dashboard' && <button onClick={fetchAll} style={{...GHOST_BTN, padding: '0.5rem 1rem', fontSize: '0.7rem'}}>↻ Refresh</button>}
             {activeTab === 'products' && (
-              <button onClick={() => { setCurrentProduct({ stock: 0 }); setShowModal(true); }} style={PREMIUM_BTN}>+ Add Product</button>
+              <button onClick={() => { setCurrentProduct({ stock: 0 }); setShowModal(true); }} style={{...PREMIUM_BTN, padding: '0.5rem 1rem', fontSize: '0.7rem'}}>+ Add Product</button>
             )}
             {activeTab === 'coupons' && (
-              <button onClick={() => { setEditingCoupon(null); setCouponForm({ code: '', discountType: 'PERCENTAGE', discountValue: 10, minOrderAmount: 0, maxUses: 0, active: true, description: '' }); setShowCouponModal(true); }} style={PREMIUM_BTN}>+ New Coupon</button>
+              <button onClick={() => { setEditingCoupon(null); setCouponForm({ code: '', discountType: 'PERCENTAGE', discountValue: 10, minOrderAmount: 0, maxUses: 0, active: true, description: '' }); setShowCouponModal(true); }} style={{...PREMIUM_BTN, padding: '0.5rem 1rem', fontSize: '0.7rem'}}>+ New Coupon</button>
             )}
-            {activeTab === 'analytics' && (
-              <button onClick={fetchAnalytics} style={GHOST_BTN}>↻ Refresh</button>
-            )}
-            {activeTab === 'users' && (
-              <button onClick={fetchUsers} style={GHOST_BTN}>↻ Refresh</button>
-            )}
+            {activeTab === 'analytics' && <button onClick={fetchAnalytics} style={{...GHOST_BTN, padding: '0.5rem 1rem', fontSize: '0.7rem'}}>↻ Refresh</button>}
+            {activeTab === 'users' && <button onClick={fetchUsers} style={{...GHOST_BTN, padding: '0.5rem 1rem', fontSize: '0.7rem'}}>↻ Refresh</button>}
           </div>
         </div>
 
@@ -456,14 +487,14 @@ export default function AdminPanel() {
                     { label: 'Revenue', value: `₹${totalRevenue.toFixed(0)}`, sub: 'Gross earnings', color: '#22c55e', icon: '₹' },
                     { label: 'Low Stock', value: lowStock, sub: 'Items ≤ 5 units', color: lowStock > 0 ? '#ef4444' : '#22c55e', icon: '!' },
                   ].map((k, i) => (
-                    <div key={i} style={{ ...CARD, position: 'relative', overflow: 'hidden' }}>
+                    <div key={i} className="dashboard-card" style={CARD}>
                       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,${k.color},transparent)` }} />
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem' }}>
-                        <span style={{ fontSize: '0.65rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#aaa', fontWeight: 600 }}>{k.label}</span>
-                        <span style={{ width: 28, height: 28, borderRadius: '50%', background: k.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: k.color }}>{k.icon}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                        <span style={{ fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#888', fontWeight: 600 }}>{k.label}</span>
+                        <span style={{ width: 24, height: 24, borderRadius: '50%', background: k.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: k.color }}>{k.icon}</span>
                       </div>
                       <div style={{ fontSize: '2.2rem', fontWeight: 700, color: k.color, fontFamily: "'Cormorant Garamond',serif", letterSpacing: 1, lineHeight: 1 }}>{k.value}</div>
-                      <div style={{ fontSize: '0.72rem', color: '#777', marginTop: 6 }}>{k.sub}</div>
+                      <div style={{ fontSize: '0.65rem', color: '#555', marginTop: 4 }}>{k.sub}</div>
                     </div>
                   ))}
                 </div>
@@ -471,24 +502,29 @@ export default function AdminPanel() {
                 {/* Status strip */}
                 <div className="grid-3" style={{ marginBottom: '2.5rem' }}>
                   {[{ label: 'Paid', count: paidOrders, color: '#3b82f6' }, { label: 'Shipped', count: shippedOrders, color: '#f59e0b' }, { label: 'Delivered', count: deliveredOrders, color: '#22c55e' }].map((s, i) => (
-                    <div key={i} style={{ ...CARD, display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.2rem 1.6rem' }}>
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: s.color }} />
+                    <div key={i} className="status-card" style={CARD}>
+                      <div style={{ width: 40, height: 40, borderRadius: 10, background: s.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: s.color }} />
                       </div>
                       <div>
                         <div style={{ fontSize: '1.6rem', fontWeight: 700, color: s.color, fontFamily: "'Cormorant Garamond',serif", lineHeight: 1 }}>{s.count}</div>
-                        <div style={{ fontSize: '0.72rem', color: '#999', marginTop: 2 }}>{s.label} Orders</div>
+                        <div style={{ fontSize: '0.65rem', color: '#777', marginTop: 2 }}>{s.label} Orders</div>
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* Quick actions */}
-                <div style={{ ...CARD, display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.65rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#999', fontWeight: 600, marginRight: '0.5rem' }}>Quick Actions</span>
-                  <button onClick={() => setActiveTab('analytics')} style={PREMIUM_BTN}>📈 Analytics</button>
-                  <button onClick={() => setActiveTab('coupons')} style={PREMIUM_BTN}>🏷 Coupons</button>
-                  <button onClick={() => setActiveTab('orders')} style={GHOST_BTN}>Orders ({paidOrders} pending)</button>
+                <div className="flex-stack" style={{ ...CARD, gap: '0.8rem', padding: '1.2rem' }}>
+                  <span style={{ fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#666', fontWeight: 600, marginRight: '0.5rem' }}>Quick Actions</span>
+                  <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                    <button onClick={() => setActiveTab('analytics')} style={{ ...PREMIUM_BTN, padding: '0.5rem 1rem', fontSize: '0.7rem' }}>📈 Analytics</button>
+                    <button onClick={handleBulkRestock} style={{ ...GHOST_BTN, padding: '0.5rem 1rem', fontSize: '0.7rem', borderColor: '#333' }}>⚡ Bulk Restock</button>
+                    <button onClick={handleFixImages} style={{ ...GHOST_BTN, color: '#c9a96e', borderColor: '#c9a96e44', padding: '0.5rem 1rem', fontSize: '0.7rem' }}>🖼️ Repair Images</button>
+                    <button onClick={() => setActiveTab('coupons')} style={{ ...PREMIUM_BTN, padding: '0.5rem 1rem', fontSize: '0.7rem' }}>🏷 Coupons</button>
+                    <button onClick={handleBulkRestock} style={{ ...PREMIUM_BTN, background: '#3b82f6', padding: '0.5rem 1rem', fontSize: '0.7rem' }}>📦 Restock All</button>
+                    <button onClick={() => setActiveTab('orders')} style={{ ...GHOST_BTN, padding: '0.5rem 1rem', fontSize: '0.7rem' }}>Orders ({paidOrders} pending)</button>
+                  </div>
                 </div>
               </div>
             )}
@@ -593,22 +629,27 @@ export default function AdminPanel() {
             {/* ══ PRODUCTS ══ */}
             {activeTab === 'products' && (
               <div className="ap-fade">
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+                <div className="flex-stack" style={{ marginBottom: '1.5rem', justifyContent: 'space-between' }}>
                   <div style={{ position: 'relative', flex: 1, maxWidth: 360 }}>
                     <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#333', fontSize: '0.85rem' }}>⌕</span>
                     <input type="text" placeholder="Search products..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                       style={{ ...INPUT, paddingLeft: '2.2rem' }} />
                   </div>
-                  <span style={{ fontSize: '0.72rem', color: '#333', letterSpacing: 1 }}>{filteredProducts.length} / {products.length} products</span>
+                  <span style={{ fontSize: '0.65rem', color: '#555', letterSpacing: 1 }}>{filteredProducts.length} items</span>
                 </div>
 
-                <div className="admin-table-wrapper" style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
-                  <table style={{ minWidth: '900px', width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <div className="admin-table-wrapper" style={{ ...CARD, padding: 0, overflowX: 'auto' }}>
+                  {/* Desktop Table View */}
+                  <table className="admin-table hide-mobile">
                     <thead>
-                      <tr style={{ borderBottom: '1px solid #1a1a1a' }}>
-                        {['', 'Product', 'Category', 'Price', 'Stock', 'Status', 'Actions'].map((h, i) => (
-                          <th key={i} style={{ padding: '1rem 1.2rem', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#888', fontWeight: 600, textAlign: i >= 5 ? 'right' : 'left' }}>{h}</th>
-                        ))}
+                      <tr>
+                        <th style={{ width: 50 }}></th>
+                        <th style={{ textAlign: 'left' }}>Product</th>
+                        <th style={{ textAlign: 'left' }}>Category</th>
+                        <th style={{ textAlign: 'left' }}>Price</th>
+                        <th style={{ textAlign: 'left' }}>Stock</th>
+                        <th style={{ textAlign: 'right' }}>Status</th>
+                        <th style={{ textAlign: 'right' }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -617,39 +658,53 @@ export default function AdminPanel() {
                       ) : filteredProducts.map(p => (
                         <tr key={p.id} className="ap-row">
                           <td style={{ padding: '0.9rem 1.2rem', width: 56 }}>
-                            <div style={{ width: 44, height: 56, backgroundImage: `url(${p.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 6, backgroundColor: '#111', flexShrink: 0 }} />
+                            <div style={{ width: 44, height: 56, backgroundImage: `url(${p.imageUrl}), url('https://placehold.co/44x56?text=No+Image')`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 6, backgroundColor: '#111', flexShrink: 0 }} />
                           </td>
-                          <td style={{ padding: '0.9rem 1.2rem' }}>
+                          <td style={{ textAlign: 'left' }}>
                             <div style={{ fontWeight: 500, color: '#f0ede6', marginBottom: 2 }}>{p.name}</div>
                             <div style={{ fontSize: '0.72rem', color: '#888', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.description}</div>
                           </td>
-                          <td style={{ padding: '0.9rem 1.2rem' }}>
-                            {p.category ? <span style={{ padding: '0.2rem 0.7rem', background: '#c9a96e18', border: '1px solid #c9a96e22', borderRadius: 4, fontSize: '0.72rem', color: '#c9a96e', fontWeight: 500 }}>{p.category}</span> : <span style={{ color: '#333' }}>—</span>}
+                          <td style={{ textAlign: 'left' }}>
+                            {p.category ? <span style={{ padding: '0.2rem 0.7rem', background: '#c9a96e18', border: '1px solid #c9a96e22', borderRadius: 4, fontSize: '0.7rem', color: '#c9a96e', fontWeight: 500 }}>{p.category}</span> : <span style={{ color: '#333' }}>—</span>}
                           </td>
-                          <td style={{ padding: '0.9rem 1.2rem', fontWeight: 600, color: '#f0ede6' }}>₹{p.price?.toFixed(0)}</td>
-                          <td style={{ padding: '0.9rem 1.2rem', fontWeight: 600, color: (p.stock || 0) <= 5 ? '#ef4444' : '#f0ede6' }}>{p.stock ?? 0}</td>
-                          <td style={{ padding: '0.9rem 1.2rem' }}>
-                            <span style={{ padding: '0.25rem 0.8rem', borderRadius: 20, fontSize: '0.68rem', fontWeight: 600, background: (p.stock || 0) > 0 ? '#22c55e14' : '#ef444414', color: (p.stock || 0) > 0 ? '#22c55e' : '#ef4444', border: `1px solid ${(p.stock || 0) > 0 ? '#22c55e22' : '#ef444422'}` }}>
-                              {(p.stock || 0) > 0 ? 'In Stock' : 'Out of Stock'}
+                          <td style={{ textAlign: 'left', fontWeight: 600, color: '#f0ede6' }}>₹{p.price?.toFixed(0)}</td>
+                          <td style={{ textAlign: 'left', fontWeight: 600, color: (p.stock || 0) <= 5 ? '#ef4444' : '#f0ede6' }}>{p.stock ?? 0}</td>
+                          <td style={{ textAlign: 'right' }}>
+                            <span style={{ padding: '0.25rem 0.8rem', borderRadius: 20, fontSize: '0.6rem', fontWeight: 700, background: (p.stock || 0) > 0 ? '#22c55e14' : '#ef444414', color: (p.stock || 0) > 0 ? '#22c55e' : '#ef4444', border: `1px solid ${(p.stock || 0) > 0 ? '#22c55e22' : '#ef444422'}` }}>
+                              {(p.stock || 0) > 0 ? 'IN STOCK' : 'OUT'}
                             </span>
                           </td>
                           <td style={{ padding: '0.9rem 1.2rem', textAlign: 'right' }}>
                             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                               <button onClick={() => { setCurrentProduct(p); setShowModal(true); }} style={GHOST_BTN_SM}>Edit</button>
-                              {deleteConfirm === p.id ? (
-                                <div style={{ display: 'flex', gap: '0.3rem' }}>
-                                  <button onClick={() => handleDelete(p.id)} style={{ ...GHOST_BTN_SM, color: '#ef4444', borderColor: '#ef444444' }}>Confirm</button>
-                                  <button onClick={() => setDeleteConfirm(null)} style={GHOST_BTN_SM}>Cancel</button>
-                                </div>
-                              ) : (
-                                <button onClick={() => setDeleteConfirm(p.id)} style={{ ...GHOST_BTN_SM, color: '#ef4444', borderColor: '#ef444433' }}>Delete</button>
-                              )}
+                              <button onClick={() => setDeleteConfirm(p.id!)} style={{ ...GHOST_BTN_SM, color: '#ef4444', borderColor: '#ef444433' }}>Delete</button>
                             </div>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+
+                  {/* Mobile Card View */}
+                  <div className="mobile-only-btn" style={{ flexDirection: 'column', gap: '0.8rem', padding: '1rem', width: '100%' }}>
+                    {filteredProducts.map(p => (
+                      <div key={p.id} style={{ ...CARD, padding: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <div style={{ width: 60, height: 80, backgroundImage: `url(${p.imageUrl}), url('https://placehold.co/60x80?text=No+Image')`, backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: 8, flexShrink: 0 }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600, color: '#f0ede6', fontSize: '0.9rem', marginBottom: 2 }}>{p.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#888', marginBottom: 8 }}>{p.category}</div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ fontWeight: 700, color: '#c9a96e' }}>₹{p.price?.toFixed(0)}</div>
+                            <div style={{ fontSize: '0.7rem', color: (p.stock || 0) <= 5 ? '#ef4444' : '#aaa' }}>Stock: <span style={{fontWeight: 700}}>{p.stock ?? 0}</span></div>
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                          <button onClick={() => { setCurrentProduct(p); setShowModal(true); }} style={GHOST_BTN_SM}>Edit</button>
+                          <button onClick={() => handleDelete(p.id!)} style={{ ...GHOST_BTN_SM, color: '#ef4444' }}>Del</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -657,25 +712,31 @@ export default function AdminPanel() {
             {/* ══ ORDERS ══ */}
             {activeTab === 'orders' && (
               <div className="ap-fade">
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-                  {['ALL', 'PAID', 'SHIPPED', 'DELIVERED'].map(f => (
-                    <button key={f} onClick={() => setOrderFilter(f)} style={{
-                      padding: '0.5rem 1.2rem', borderRadius: 6, fontSize: '0.75rem', fontWeight: 500,
-                      border: '1px solid', cursor: 'pointer', fontFamily: "'Inter',sans-serif", transition: 'all 0.15s',
-                      ...(orderFilter === f ? { background: '#c9a96e', color: '#0a0a0a', borderColor: '#c9a96e' } : { background: 'transparent', color: '#555', borderColor: '#1e1e1e' }),
-                    }}>
-                      {f === 'ALL' ? `All (${orders.length})` : `${f} (${orders.filter(o => o.status === f).length})`}
-                    </button>
-                  ))}
+                <div className="flex-stack" style={{ marginBottom: '1.5rem', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '0.5rem', WebkitOverflowScrolling: 'touch' }}>
+                    {['ALL', 'PAID', 'SHIPPED', 'DELIVERED'].map(f => (
+                      <button key={f} onClick={() => setOrderFilter(f)} style={{
+                        padding: '0.4rem 1rem', borderRadius: 20, fontSize: '0.65rem', fontWeight: 600,
+                        border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+                        ...(orderFilter === f ? { background: '#c9a96e', color: '#0a0a0a' } : { background: '#111', color: '#555' }),
+                      }}>
+                        {f}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="admin-table-wrapper" style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
-                  <table style={{ minWidth: '800px', width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <div className="admin-table-wrapper" style={{ ...CARD, padding: 0, overflowX: 'auto' }}>
+                  <table className="admin-table">
                     <thead>
-                      <tr style={{ borderBottom: '1px solid #1a1a1a' }}>
-                        {['Order', 'Customer', 'Date', 'Items', 'Amount', 'Status', 'Action'].map((h, i) => (
-                          <th key={h} style={{ padding: '1rem 1.2rem', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#888', fontWeight: 600, textAlign: i >= 6 ? 'right' : 'left' }}>{h}</th>
-                        ))}
+                      <tr>
+                        <th style={{ textAlign: 'left' }}>Order</th>
+                        <th style={{ textAlign: 'left' }}>Customer</th>
+                        <th className="mobile-hide" style={{ textAlign: 'left' }}>Date</th>
+                        <th className="mobile-hide" style={{ textAlign: 'left' }}>Items</th>
+                        <th style={{ textAlign: 'left' }}>Amount</th>
+                        <th style={{ textAlign: 'right' }}>Status</th>
+                        <th style={{ textAlign: 'right' }}>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -683,13 +744,18 @@ export default function AdminPanel() {
                         <tr><td colSpan={7} style={{ textAlign: 'center', padding: '4rem', color: '#333' }}>No orders found</td></tr>
                       ) : filteredOrders.map((o: any) => (
                         <tr key={o.id} className="ap-row">
-                          <td style={{ padding: '1rem 1.2rem', fontWeight: 700, color: '#c9a96e', fontFamily: "'Cormorant Garamond',serif", fontSize: '1rem' }}>#{o.id}</td>
-                          <td style={{ padding: '1rem 1.2rem', color: '#ddd' }}>{o.user?.fullName || '—'}</td>
-                          <td style={{ padding: '1rem 1.2rem', color: '#999', fontSize: '0.78rem' }}>{new Date(o.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}</td>
-                          <td style={{ padding: '1rem 1.2rem', color: '#aaa' }}>{o.items?.length || 0} item{o.items?.length !== 1 ? 's' : ''}</td>
-                          <td style={{ padding: '1rem 1.2rem', fontWeight: 700, color: '#f0ede6' }}>₹{o.totalAmount?.toFixed(0)}</td>
-                          <td style={{ padding: '1rem 1.2rem' }}>
-                            <span style={{ padding: '0.25rem 0.8rem', borderRadius: 20, fontSize: '0.68rem', fontWeight: 600, background: (STATUS_COLORS[o.status] ?? '#888') + '18', color: STATUS_COLORS[o.status] ?? '#888', border: `1px solid ${(STATUS_COLORS[o.status] ?? '#888')}33` }}>{o.status}</span>
+                          <td style={{ textAlign: 'left' }}>
+                            <div style={{ fontWeight: 700, color: '#c9a96e', fontSize: '0.85rem' }}>#{o.id}</div>
+                          </td>
+                          <td style={{ textAlign: 'left' }}>
+                            <div style={{ fontWeight: 500, color: '#f0ede6', fontSize: '0.8rem' }}>{o.user?.fullName || 'Guest'}</div>
+                            <div className="mobile-hide" style={{ fontSize: '0.7rem', color: '#888' }}>{o.user?.email}</div>
+                          </td>
+                          <td className="mobile-hide" style={{ textAlign: 'left', color: '#999', fontSize: '0.78rem' }}>{new Date(o.createdAt).toLocaleDateString()}</td>
+                          <td className="mobile-hide" style={{ textAlign: 'left', color: '#aaa' }}>{o.items?.length || 0} items</td>
+                          <td style={{ textAlign: 'left', fontWeight: 700, color: '#f0ede6' }}>₹{o.totalAmount?.toFixed(0)}</td>
+                          <td style={{ textAlign: 'right' }}>
+                            <span style={{ padding: '0.2rem 0.6rem', borderRadius: 4, fontSize: '0.6rem', fontWeight: 700, background: (STATUS_COLORS[o.status] ?? '#888') + '14', color: STATUS_COLORS[o.status] ?? '#888', border: `1px solid ${(STATUS_COLORS[o.status] ?? '#888')}22` }}>{o.status}</span>
                           </td>
                           <td style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>
                             {o.status === 'PAID' && <button onClick={() => updateStatus(o.id, 'SHIPPED')} style={PREMIUM_BTN}>Ship</button>}
@@ -707,13 +773,13 @@ export default function AdminPanel() {
             {/* ══ USERS ══ */}
             {activeTab === 'users' && (
               <div className="ap-fade">
-                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+                <div className="flex-stack" style={{ marginBottom: '1.5rem', justifyContent: 'space-between' }}>
                   <div style={{ position: 'relative', flex: 1, maxWidth: 360 }}>
                     <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#555', fontSize: '0.85rem' }}>⌕</span>
                     <input type="text" placeholder="Search users..." value={userSearch} onChange={e => setUserSearch(e.target.value)}
                       style={{ ...INPUT, paddingLeft: '2.2rem' }} />
                   </div>
-                  <span style={{ fontSize: '0.72rem', color: '#555', letterSpacing: 1 }}>{users.length} registered users</span>
+                  <span style={{ fontSize: '0.65rem', color: '#555', letterSpacing: 1 }}>{users.length} users</span>
                 </div>
 
                 {usersLoading ? (
@@ -722,13 +788,16 @@ export default function AdminPanel() {
                     Loading users...
                   </div>
                 ) : (
-                  <div className="admin-table-wrapper" style={{ ...CARD, padding: 0, overflow: 'hidden' }}>
-                    <table style={{ minWidth: '700px', width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                  <div className="admin-table-wrapper" style={{ ...CARD, padding: 0, overflowX: 'auto' }}>
+                    <table className="admin-table">
                       <thead>
-                        <tr style={{ borderBottom: '1px solid #1a1a1a' }}>
-                          {['User', 'Email', 'Role', 'Orders', 'Total Spent', 'Actions'].map((h, i) => (
-                            <th key={h} style={{ padding: '1rem 1.2rem', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#888', fontWeight: 600, textAlign: i >= 5 ? 'right' : 'left' }}>{h}</th>
-                          ))}
+                        <tr>
+                          <th style={{ textAlign: 'left' }}>User</th>
+                          <th className="mobile-hide" style={{ textAlign: 'left' }}>Email</th>
+                          <th className="mobile-hide" style={{ textAlign: 'left' }}>Role</th>
+                          <th style={{ textAlign: 'left' }}>Orders</th>
+                          <th style={{ textAlign: 'left' }}>Spent</th>
+                          <th style={{ textAlign: 'right' }}>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -744,22 +813,20 @@ export default function AdminPanel() {
                           )
                           .map((u: any) => (
                             <tr key={u.id} className="ap-row">
-                              <td style={{ padding: '1rem 1.2rem' }}>
+                              <td style={{ textAlign: 'left' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
-                                  <div style={{ width: 32, height: 32, borderRadius: '50%', background: u.role === 'ADMIN' ? 'linear-gradient(135deg,#c9a96e,#7c5a2e)' : '#1a1a1a', border: '1px solid #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700, color: u.role === 'ADMIN' ? '#0a0a0a' : '#888', flexShrink: 0 }}>
+                                  <div className="mobile-hide" style={{ width: 28, height: 28, borderRadius: '50%', background: u.role === 'ADMIN' ? 'linear-gradient(135deg,#c9a96e,#7c5a2e)' : '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: u.role === 'ADMIN' ? '#0a0a0a' : '#888', flexShrink: 0 }}>
                                     {(u.fullName || u.email || '?').charAt(0).toUpperCase()}
                                   </div>
                                   <span style={{ fontWeight: 500, color: '#f0ede6' }}>{u.fullName || '—'}</span>
                                 </div>
                               </td>
-                              <td style={{ padding: '1rem 1.2rem', color: '#888', fontSize: '0.82rem' }}>{u.email}</td>
-                              <td style={{ padding: '1rem 1.2rem' }}>
-                                <span style={{ padding: '0.2rem 0.7rem', borderRadius: 20, fontSize: '0.65rem', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', background: u.role === 'ADMIN' ? '#c9a96e18' : '#1e1e1e', color: u.role === 'ADMIN' ? '#c9a96e' : '#666', border: `1px solid ${u.role === 'ADMIN' ? '#c9a96e33' : '#2a2a2a'}` }}>
-                                  {u.role}
-                                </span>
+                              <td className="mobile-hide" style={{ textAlign: 'left', color: '#888', fontSize: '0.78rem' }}>{u.email}</td>
+                              <td className="mobile-hide" style={{ textAlign: 'left' }}>
+                                <span style={{ fontSize: '0.6rem', fontWeight: 700, color: u.role === 'ADMIN' ? '#c9a96e' : '#555' }}>{u.role}</span>
                               </td>
-                              <td style={{ padding: '1rem 1.2rem', color: '#aaa' }}>{u.orderCount}</td>
-                              <td style={{ padding: '1rem 1.2rem', fontWeight: 600, color: '#22c55e' }}>₹{u.totalSpent?.toLocaleString()}</td>
+                              <td style={{ textAlign: 'left', color: '#aaa' }}>{u.orderCount}</td>
+                              <td style={{ textAlign: 'left', fontWeight: 600, color: '#22c55e' }}>₹{u.totalSpent?.toLocaleString()}</td>
                               <td style={{ padding: '1rem 1.2rem', textAlign: 'right' }}>
                                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                                   <button onClick={() => handlePromoteUser(u.id, u.role)}
@@ -788,7 +855,7 @@ export default function AdminPanel() {
                     <button onClick={() => setShowCouponModal(true)} style={PREMIUM_BTN}>+ Create First Coupon</button>
                   </div>
                 ) : (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: '1rem' }}>
+                  <div className="grid-3">
                     {coupons.map(c => (
                       <div key={c.id} style={{ ...CARD, position: 'relative', overflow: 'hidden', opacity: c.active ? 1 : 0.55 }}>
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: c.active ? 'linear-gradient(90deg,#c9a96e,transparent)' : '#1a1a1a' }} />
@@ -819,9 +886,9 @@ export default function AdminPanel() {
 
             {/* ══ CHAT ══ */}
             {activeTab === 'chat' && (
-              <div className="ap-fade" style={{ display: 'flex', gap: '1.2rem', height: 'calc(100vh - 200px)', minHeight: 400 }}>
+              <div className="ap-fade admin-chat-layout" style={{ display: 'flex', gap: '1.2rem', height: 'calc(100vh - 200px)', minHeight: 400 }}>
                 {/* Conversation List */}
-                <div style={{ width: 320, flexShrink: 0, ...CARD, padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div className={`admin-chat-list ${selectedConvo ? 'mobile-hidden' : ''}`} style={{ width: 320, flexShrink: 0, ...CARD, padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                   <div style={{ padding: '1.2rem 1.2rem 0.8rem', borderBottom: '1px solid #1a1a1a' }}>
                     <div style={{ fontSize: '0.6rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: '#888', fontWeight: 600 }}>Conversations</div>
                   </div>
@@ -879,9 +946,9 @@ export default function AdminPanel() {
                 </div>
 
                 {/* Chat View */}
-                <div style={{ flex: 1, ...CARD, padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div className={`admin-chat-view ${!selectedConvo ? 'mobile-hidden' : ''}`} style={{ flex: 1, ...CARD, padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                   {!selectedConvo ? (
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555', gap: '1rem' }}>
+                    <div className="admin-chat-empty" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555', gap: '1rem' }}>
                       <div style={{ fontSize: '3rem', opacity: 0.15 }}>◎</div>
                       <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.2rem', color: '#888' }}>Select a Conversation</div>
                       <div style={{ fontSize: '0.75rem', color: '#555' }}>Choose a customer from the list to start chatting</div>
@@ -895,6 +962,7 @@ export default function AdminPanel() {
                         display: 'flex', alignItems: 'center', gap: '0.8rem',
                         background: 'rgba(201,169,110,0.03)',
                       }}>
+                        <button className="mobile-only-btn" onClick={() => selectConversation('')} style={{ background: 'transparent', border: 'none', color: '#c9a96e', fontSize: '1.2rem', cursor: 'pointer', padding: '0 0.5rem 0 0' }}>←</button>
                         <div style={{
                           width: 32, height: 32, borderRadius: '50%',
                           background: 'linear-gradient(135deg, #c9a96e, #7c5a2e)',
@@ -995,7 +1063,7 @@ export default function AdminPanel() {
       {/* ══ PRODUCT MODAL ══ */}
       {showModal && (
         <div style={MODAL_OVERLAY} onClick={() => setShowModal(false)}>
-          <div style={MODAL_BOX} onClick={e => e.stopPropagation()}>
+          <div style={MODAL_BOX} className="modal-content" onClick={e => e.stopPropagation()}>
             <div style={{ marginBottom: '0.3rem', fontSize: '0.6rem', letterSpacing: '3px', textTransform: 'uppercase', color: '#888' }}>Product</div>
             <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '1.6rem', fontWeight: 300, margin: '0 0 2rem', color: '#f0ede6' }}>{currentProduct.id ? 'Edit Product' : 'Add New Product'}</h2>
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -1031,7 +1099,7 @@ export default function AdminPanel() {
       {/* ══ COUPON MODAL ══ */}
       {showCouponModal && (
         <div style={MODAL_OVERLAY} onClick={() => setShowCouponModal(false)}>
-          <div style={MODAL_BOX} onClick={e => e.stopPropagation()}>
+          <div style={MODAL_BOX} className="modal-content" onClick={e => e.stopPropagation()}>
             <div style={{ marginBottom: '0.3rem', fontSize: '0.6rem', letterSpacing: '3px', textTransform: 'uppercase', color: '#888' }}>Coupon</div>
             <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '1.6rem', fontWeight: 300, margin: '0 0 2rem', color: '#f0ede6' }}>{editingCoupon ? 'Edit Coupon' : 'New Coupon'}</h2>
             <form onSubmit={handleSaveCoupon} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

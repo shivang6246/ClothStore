@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.entity.Product;
 import com.example.demo.service.FileStorageService;
 import com.example.demo.service.ProductService;
+import com.example.demo.util.DbImageFixer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +19,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final FileStorageService fileStorageService;
+    private final DbImageFixer dbImageFixer;
 
     @GetMapping
     public ResponseEntity<?> getAllProducts(
@@ -84,6 +86,18 @@ public class ProductController {
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
         return ResponseEntity.ok(productService.updateProduct(id, product));
+    }
+
+    @PostMapping("/bulk-restock")
+    public ResponseEntity<?> bulkRestock() {
+        productService.restockAll();
+        return ResponseEntity.ok(java.util.Map.of("message", "All products restocked to 50 units."));
+    }
+
+    @PostMapping("/fix-images")
+    public ResponseEntity<?> fixImages() {
+        dbImageFixer.run();
+        return ResponseEntity.ok(java.util.Map.of("message", "Database images have been repaired with stock photos."));
     }
 
     @DeleteMapping("/{id}")

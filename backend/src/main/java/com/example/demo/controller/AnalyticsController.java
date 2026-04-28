@@ -5,8 +5,6 @@ import com.example.demo.entity.OrderItem;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -14,9 +12,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+
 @RestController
 @RequestMapping("/api/admin/analytics")
-@CrossOrigin(origins = "http://localhost:5173,http://localhost:5174,http://localhost:5175")
 public class AnalyticsController {
 
     @Autowired private OrderRepository orderRepository;
@@ -24,7 +24,8 @@ public class AnalyticsController {
     @Autowired private UserRepository userRepository;
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getAnalytics() {
+    @Cacheable(value = "analytics")
+    public Map<String, Object> getAnalytics() {
         List<Order> allOrders = orderRepository.findAll();
         List<Order> validOrders = allOrders.stream()
             .filter(o -> !"CANCELLED".equals(o.getStatus()))
@@ -55,7 +56,8 @@ public class AnalyticsController {
                 LocalDate date = o.getCreatedAt().toLocalDate();
                 String key = date.format(fmt);
                 if (revenueByDay.containsKey(key)) {
-                    revenueByDay.merge(key, o.getTotalAmount() == null ? 0 : o.getTotalAmount(), Double::sum);
+                    double amount = o.getTotalAmount() != null ? o.getTotalAmount() : 0.0;
+                    revenueByDay.merge(key, amount, Double::sum);
                 }
             }
         }
@@ -82,8 +84,10 @@ public class AnalyticsController {
                 for (OrderItem item : o.getItems()) {
                     if (item.getProduct() != null) {
                         String name = item.getProduct().getName();
-                        productSales.merge(name, (long)(item.getQuantity() == null ? 0 : item.getQuantity()), Long::sum);
-                        productRevenue.merge(name, (item.getPrice() == null ? 0 : item.getPrice()) * (item.getQuantity() == null ? 0 : item.getQuantity()), Double::sum);
+                        long qty = (item.getQuantity() != null) ? item.getQuantity() : 0L;
+                        double price = (item.getPrice() != null) ? item.getPrice() : 0.0;
+                        productSales.merge(name, qty, Long::sum);
+                        productRevenue.merge(name, price * qty, Double::sum);
                     }
                 }
             }
@@ -107,9 +111,9 @@ public class AnalyticsController {
                 for (OrderItem item : o.getItems()) {
                     if (item.getProduct() != null && item.getProduct().getCategory() != null) {
                         String cat = item.getProduct().getCategory();
-                        categoryRevenue.merge(cat,
-                            (item.getPrice() == null ? 0 : item.getPrice()) * (item.getQuantity() == null ? 0 : item.getQuantity()),
-                            Double::sum);
+                        long qty = (item.getQuantity() != null) ? item.getQuantity() : 0L;
+                        double price = (item.getPrice() != null) ? item.getPrice() : 0.0;
+                        categoryRevenue.merge(cat, price * qty, Double::sum);
                     }
                 }
             }
@@ -128,6 +132,6 @@ public class AnalyticsController {
         response.put("topProducts", topProducts);
         response.put("categoryRevenue", categoryRevenue);
 
-        return ResponseEntity.ok(response);
+        return response;
     }
 }

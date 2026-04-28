@@ -4,17 +4,16 @@ import com.example.demo.entity.Coupon;
 import com.example.demo.repository.CouponRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173,http://localhost:5174,http://localhost:5175")
 public class CouponController {
 
     @Autowired
@@ -60,6 +59,7 @@ public class CouponController {
 
     // ── USER: Apply (increment usedCount) — called when order is placed ──────
     @PostMapping("/api/coupons/apply")
+    @CacheEvict(value = "couponsList", allEntries = true)
     public ResponseEntity<?> apply(@RequestParam String code) {
         Optional<Coupon> opt = couponRepository.findByCodeIgnoreCase(code.trim());
         if (opt.isPresent()) {
@@ -72,12 +72,14 @@ public class CouponController {
 
     // ── ADMIN: List all coupons ───────────────────────────────────────────────
     @GetMapping("/api/admin/coupons")
-    public ResponseEntity<List<Coupon>> listAll() {
-        return ResponseEntity.ok(couponRepository.findAll());
+    @Cacheable(value = "couponsList")
+    public List<Coupon> listAll() {
+        return couponRepository.findAll();
     }
 
     // ── ADMIN: Create coupon ──────────────────────────────────────────────────
     @PostMapping("/api/admin/coupons")
+    @CacheEvict(value = "couponsList", allEntries = true)
     public ResponseEntity<?> create(@RequestBody Coupon coupon) {
         if (couponRepository.findByCodeIgnoreCase(coupon.getCode()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Coupon code already exists."));
@@ -90,6 +92,7 @@ public class CouponController {
 
     // ── ADMIN: Update coupon ──────────────────────────────────────────────────
     @PutMapping("/api/admin/coupons/{id}")
+    @CacheEvict(value = "couponsList", allEntries = true)
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Coupon updated) {
         return couponRepository.findById(id)
             .map(c -> {
@@ -108,6 +111,7 @@ public class CouponController {
 
     // ── ADMIN: Toggle active ──────────────────────────────────────────────────
     @PatchMapping("/api/admin/coupons/{id}/toggle")
+    @CacheEvict(value = "couponsList", allEntries = true)
     public ResponseEntity<?> toggle(@PathVariable Long id) {
         return couponRepository.findById(id)
             .map(c -> {
@@ -119,6 +123,7 @@ public class CouponController {
 
     // ── ADMIN: Delete coupon ──────────────────────────────────────────────────
     @DeleteMapping("/api/admin/coupons/{id}")
+    @CacheEvict(value = "couponsList", allEntries = true)
     public ResponseEntity<?> delete(@PathVariable Long id) {
         couponRepository.deleteById(id);
         return ResponseEntity.ok(Map.of("status", "deleted"));

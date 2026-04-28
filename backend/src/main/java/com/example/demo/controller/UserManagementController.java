@@ -12,10 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @RestController
 @RequestMapping("/api/admin/users")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:5175"})
 @RequiredArgsConstructor
 public class UserManagementController {
 
@@ -23,7 +24,8 @@ public class UserManagementController {
     private final OrderRepository orderRepository;
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllUsers() {
+    @Cacheable(value = "usersList")
+    public List<Map<String, Object>> getAllUsers() {
         List<User> users = userRepository.findAll();
 
         List<Map<String, Object>> result = users.stream().map(u -> {
@@ -45,10 +47,11 @@ public class UserManagementController {
             return row;
         }).collect(Collectors.toList());
 
-        return ResponseEntity.ok(result);
+        return result;
     }
 
     @PatchMapping("/{id}/role")
+    @CacheEvict(value = "usersList", allEntries = true)
     public ResponseEntity<?> updateRole(@PathVariable Long id, @RequestParam String role) {
         return userRepository.findById(id)
             .map(u -> {
@@ -60,6 +63,7 @@ public class UserManagementController {
     }
 
     @DeleteMapping("/{id}")
+    @CacheEvict(value = "usersList", allEntries = true)
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         if (!userRepository.existsById(id)) {
             return ResponseEntity.notFound().build();

@@ -31,7 +31,7 @@ const CATEGORIES = ["All", "Outerwear", "Blazers", "Dresses", "Sets", "Bottoms",
 function SmartImg({ src, fb, alt, style, className }: any) {
   const [s, setS] = useState(src);
   const [done, setDone] = useState(false);
-  const ultimateFb = "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=600&h=800&q=80"; // Premium clothing fallback
+  const ultimateFb = "https://picsum.photos/seed/vogue_ultimate/800/1000"; // Reliable fallback
   return (
     <img src={s || fb || ultimateFb} alt={alt} style={style} className={className}
       onError={(e) => { 
@@ -113,7 +113,7 @@ export default function Home() {
         @keyframes hf{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:scale(1)}}
         .pc:hover .co{opacity:1!important}
         .pc:hover .pi{transform:scale(1.05)}
-        .pi{transition:transform .6s ease;width:100%;height:clamp(240px,45vw,360px);object-fit:cover;display:block}
+        .pi{transition:transform .6s ease;width:100%;aspect-ratio:3/4;height:auto;object-fit:cover;display:block}
         .co{opacity:0!important;transition:opacity .3s ease;position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;flex-direction:column;justify-content:flex-end;padding:20px;gap:10px}
         .si{animation:sl .35s cubic-bezier(.25,.8,.25,1)}
         @keyframes sl{from{transform:translateX(100%)}to{transform:translateX(0)}}
@@ -443,7 +443,7 @@ function ProductCard({ p, addToCart, toggleWish, wishlist }: any) {
     <div className="pc" style={{ cursor: 'pointer' }}>
       <div style={{ position: 'relative', overflow: 'hidden', marginBottom: 16, background: '#0f0f0f' }}
            onClick={() => navigate(`/product/${p.id}`)}>
-        <img src={getPremiumImage(p)} alt={p.name} className="pi" />
+        <SmartImg src={getPremiumImage(p)} alt={p.name} className="pi" />
         <div className="co">
           <button onClick={e => { e.stopPropagation(); addToCart(p); }}
             style={{ width: '100%', padding: '13px', background: '#f0ede6', color: '#0a0a0a', fontFamily: "'Montserrat',sans-serif", fontSize: 9, letterSpacing: 3.5, textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}>

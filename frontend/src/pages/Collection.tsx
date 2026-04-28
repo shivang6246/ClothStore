@@ -22,6 +22,7 @@ export default function Collection() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pageSize = 12;
 
   useEffect(() => {
@@ -59,19 +60,64 @@ export default function Collection() {
     : products;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#f0ede6', fontFamily: "'Montserrat',sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#f0ede6', fontFamily: "'Montserrat',sans-serif", overflowX: 'hidden' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400;500;600&display=swap');
         @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
         .product-card { animation: fadeUp 0.4s ease both; }
         .product-card:hover .card-overlay { opacity:1!important; }
         .product-card:hover img { transform: scale(1.04); }
+        
+        @media (max-width: 768px) {
+          .nav-desktop { display: none !important; }
+          .col-hamburger { display: block !important; }
+          .hero-section { padding: 2rem 5% 1rem !important; }
+          .hero-section h1 { font-size: 1.8rem !important; }
+          .hero-section p { font-size: 0.7rem !important; }
+          .filters-section { flex-direction: column !important; align-items: stretch !important; gap: 0.8rem !important; padding: 1rem 4% !important; }
+          .cat-scroll { overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; }
+          .cat-scroll::-webkit-scrollbar { display: none; }
+          .col-grid { grid-template-columns: 1fr !important; gap: 1.5rem !important; padding: 1.5rem 4% !important; }
+          .col-nav { padding: 0.8rem 4% !important; }
+          .pagination-btn { padding: 0.4rem 0.6rem !important; font-size: 0.55rem !important; letter-spacing: 1px !important; }
+          .col-search-row { flex-direction: row !important; width: 100% !important; }
+          .col-search-row input { flex: 1 !important; width: auto !important; }
+        }
       `}</style>
 
+      {/* MOBILE MENU */}
+      {mobileMenuOpen && (
+        <div onClick={() => setMobileMenuOpen(false)} style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 999
+        }} />
+      )}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0, width: '80%', maxWidth: 300,
+        background: '#0a0a0a', zIndex: 1000, padding: '40px 24px',
+        transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1)',
+        display: 'flex', flexDirection: 'column' as const,
+        boxShadow: mobileMenuOpen ? '-10px 0 30px rgba(0,0,0,0.5)' : 'none'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
+          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '1.2rem', letterSpacing: 8 }}>VOGUE</span>
+          <button onClick={() => setMobileMenuOpen(false)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.5rem' }}>×</button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {['Home', 'Collection', 'Looks', 'About', 'Bag'].map(l => (
+            <Link key={l} to={l === 'Home' ? '/' : l === 'Bag' ? '/cart' : `/${l.toLowerCase()}`}
+              onClick={() => setMobileMenuOpen(false)}
+              style={{ textDecoration: 'none', color: l === 'Collection' ? '#c9a96e' : '#f0ede6', fontSize: '1.2rem', letterSpacing: '4px', textTransform: 'uppercase', fontFamily: "'Montserrat',sans-serif" }}>
+              {l}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* NAV */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem 6%', borderBottom: '0.5px solid #1a1a1a', position: 'sticky', top: 0, background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(12px)', zIndex: 100 }}>
-        <Link to="/" style={{ textDecoration: 'none', color: '#f0ede6', fontFamily: "'Cormorant Garamond',serif", fontSize: '1.4rem', fontWeight: 300, letterSpacing: 12 }}>VOGUE</Link>
-        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+      <nav className="col-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.2rem 6%', borderBottom: '0.5px solid #1a1a1a', position: 'sticky', top: 0, background: 'rgba(10,10,10,0.95)', backdropFilter: 'blur(12px)', zIndex: 100 }}>
+        <Link to="/" style={{ textDecoration: 'none', color: '#f0ede6', fontFamily: "'Cormorant Garamond',serif", fontSize: '1.2rem', fontWeight: 300, letterSpacing: 10 }}>VOGUE</Link>
+        <div className="nav-desktop" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
           {['Home', 'Collection', 'Looks', 'About'].map(l => (
             <Link key={l} to={l === 'Home' ? '/' : `/${l.toLowerCase()}`}
               style={{ textDecoration: 'none', color: l === 'Collection' ? '#c9a96e' : '#888', fontSize: '0.75rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: "'Montserrat',sans-serif" }}>
@@ -80,10 +126,13 @@ export default function Collection() {
           ))}
           <Link to="/cart" style={{ textDecoration: 'none', color: '#888', fontSize: '0.75rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: "'Montserrat',sans-serif" }}>Bag</Link>
         </div>
+        <button className="col-hamburger" onClick={() => setMobileMenuOpen(true)} style={{ display: 'none', background: 'none', border: 'none', color: '#f0ede6', cursor: 'pointer', padding: '0.5rem' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 8h16M4 16h16" strokeLinecap="round"/></svg>
+        </button>
       </nav>
 
       {/* HERO */}
-      <div style={{ padding: '4rem 6% 2rem', borderBottom: '0.5px solid #1a1a1a' }}>
+      <div className="hero-section" style={{ padding: '4rem 6% 2rem', borderBottom: '0.5px solid #1a1a1a' }}>
         <p style={{ fontSize: '0.6rem', letterSpacing: '4px', textTransform: 'uppercase', color: '#c9a96e', marginBottom: 10 }}>The Edit</p>
         <h1 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 300, margin: '0 0 1rem', letterSpacing: 2 }}>The Collection</h1>
         <p style={{ color: '#555', fontSize: '0.8rem', lineHeight: 2, maxWidth: 480, margin: 0 }}>
@@ -92,25 +141,27 @@ export default function Collection() {
       </div>
 
       {/* FILTERS */}
-      <div style={{ padding: '1.5rem 6%', borderBottom: '0.5px solid #1a1a1a', display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <div className="filters-section" style={{ padding: '1.5rem 6%', borderBottom: '0.5px solid #1a1a1a', display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+        <div className="cat-scroll" style={{ display: 'flex', gap: '0.5rem' }}>
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => { setActiveCategory(cat); setPage(0); }}
-              style={{ padding: '0.4rem 1rem', background: activeCategory === cat ? '#c9a96e' : 'transparent', color: activeCategory === cat ? '#0a0a0a' : '#555', border: `1px solid ${activeCategory === cat ? '#c9a96e' : '#1e1e1e'}`, borderRadius: 2, cursor: 'pointer', fontSize: '0.65rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: "'Montserrat',sans-serif", transition: 'all 0.2s', fontWeight: activeCategory === cat ? 600 : 400 }}>
+              style={{ padding: '0.4rem 1rem', background: activeCategory === cat ? '#c9a96e' : 'transparent', color: activeCategory === cat ? '#0a0a0a' : '#555', border: `1px solid ${activeCategory === cat ? '#c9a96e' : '#1e1e1e'}`, borderRadius: 2, cursor: 'pointer', fontSize: '0.65rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontFamily: "'Montserrat',sans-serif", transition: 'all 0.2s', fontWeight: activeCategory === cat ? 600 : 400, whiteSpace: 'nowrap' }}>
               {cat}
             </button>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <input placeholder="Search..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }}
-            style={{ padding: '0.4rem 0.8rem', background: '#111', border: '1px solid #1e1e1e', borderRadius: 2, color: '#f0ede6', fontSize: '0.75rem', fontFamily: "'Montserrat',sans-serif", outline: 'none', width: 150 }} />
-          <select value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}
-            style={{ padding: '0.4rem 0.8rem', background: '#111', border: '1px solid #1e1e1e', borderRadius: 2, color: '#888', fontSize: '0.7rem', fontFamily: "'Montserrat',sans-serif", outline: 'none', cursor: 'pointer' }}>
-            <option value="default">Sort: Featured</option>
-            <option value="price-asc">Price: Low → High</option>
-            <option value="price-desc">Price: High → Low</option>
-            <option value="name">Name: A → Z</option>
-          </select>
+        <div className="col-search-row" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <input placeholder="Search..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }}
+              style={{ padding: '0.4rem 0.8rem', background: '#111', border: '1px solid #1e1e1e', borderRadius: 2, color: '#f0ede6', fontSize: '0.75rem', fontFamily: "'Montserrat',sans-serif", outline: 'none', width: 'clamp(100px, 20vw, 150px)' }} />
+            <select value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}
+              style={{ padding: '0.4rem 0.8rem', background: '#111', border: '1px solid #1e1e1e', borderRadius: 2, color: '#888', fontSize: '0.7rem', fontFamily: "'Montserrat',sans-serif", outline: 'none', cursor: 'pointer' }}>
+              <option value="default">Sort: Featured</option>
+              <option value="price-asc">Price: Low → High</option>
+              <option value="price-desc">Price: High → Low</option>
+              <option value="name">Name: A → Z</option>
+            </select>
+          </div>
           <span style={{ color: '#444', fontSize: '0.65rem', letterSpacing: '1px', whiteSpace: 'nowrap' }}>{totalElements} pieces</span>
         </div>
       </div>
@@ -129,14 +180,15 @@ export default function Collection() {
           </div>
         ) : (
           <>
-            <div className="grid-3" style={{ gap: '2rem' }}>
+            <div className="col-grid grid-3" style={{ gap: '2rem' }}>
               {displayProducts.map((p, i) => (
                 <Link key={p.id} to={`/product/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div className="product-card" onMouseEnter={() => setHoveredId(p.id)} onMouseLeave={() => setHoveredId(null)}
                     style={{ animationDelay: `${(i % 12) * 0.05}s`, cursor: 'pointer' }}>
                     {/* Image */}
                     <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', background: '#111', borderRadius: 2, marginBottom: '1rem' }}>
-                      <img src={p.imageUrl} alt={p.name} loading="lazy"
+                      <img src={p.imageUrl || 'https://placehold.co/600x800?text=VOGUE'} alt={p.name} loading="lazy"
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x800?text=VOGUE'; }}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s ease', display: 'block' }} />
                       {/* Overlay */}
                       <div className="card-overlay" style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)', opacity: hoveredId === p.id ? 1 : 0, transition: 'opacity 0.35s', display: 'flex', alignItems: 'flex-end', padding: '1.2rem' }}>
@@ -173,8 +225,9 @@ export default function Collection() {
             {totalPages > 1 && (
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '4rem', paddingTop: '2rem', borderTop: '0.5px solid #141414' }}>
                 <button 
+                  className="pagination-btn"
                   disabled={page === 0}
-                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  onClick={() => { setPage(p => Math.max(0, p - 1)); window.scrollTo(0, 0); }}
                   style={{ 
                     background: 'transparent', border: '1px solid #222', color: page === 0 ? '#333' : '#888', 
                     padding: '0.6rem 1.2rem', cursor: page === 0 ? 'default' : 'pointer', fontSize: '0.65rem', 
@@ -182,11 +235,11 @@ export default function Collection() {
                   }}>
                   Previous
                 </button>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                   {[...Array(totalPages)].map((_, i) => (
                     <button 
                       key={i}
-                      onClick={() => setPage(i)}
+                      onClick={() => { setPage(i); window.scrollTo(0, 0); }}
                       style={{ 
                         width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: page === i ? '#c9a96e' : 'transparent',
@@ -199,8 +252,9 @@ export default function Collection() {
                   ))}
                 </div>
                 <button 
+                  className="pagination-btn"
                   disabled={page === totalPages - 1}
-                  onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                  onClick={() => { setPage(p => Math.min(totalPages - 1, p + 1)); window.scrollTo(0, 0); }}
                   style={{ 
                     background: 'transparent', border: '1px solid #222', color: page === totalPages - 1 ? '#333' : '#888', 
                     padding: '0.6rem 1.2rem', cursor: page === totalPages - 1 ? 'default' : 'pointer', fontSize: '0.65rem', 
