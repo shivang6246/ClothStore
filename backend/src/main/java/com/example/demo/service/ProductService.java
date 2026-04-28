@@ -9,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -94,6 +97,7 @@ public class ProductService {
         return productRepository.findAll(spec, sorting);
     }
 
+    @Cacheable(value = "productList", key = "#search + '-' + #category + '-' + #minPrice + '-' + #maxPrice + '-' + #sort + '-' + #page + '-' + #pageSize", unless = "#search != null || #category != null || #minPrice != null || #maxPrice != null")
     public PageResponse<Product> getAllProductsPaginated(String search, String category, Double minPrice, Double maxPrice, String sort, int page, int pageSize) {
         Specification<Product> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -119,14 +123,10 @@ public class ProductService {
             sorting = Sort.by("price").descending();
         }
 
-        long total = productRepository.count(spec);
-        int offset = Math.max(0, page) * pageSize;
-        List<Product> products = productRepository.findAll(spec, sorting).stream()
-                .skip(offset)
-                .limit(pageSize)
-                .toList();
+        Pageable pageable = PageRequest.of(Math.max(0, page), pageSize, sorting);
+        Page<Product> productPage = productRepository.findAll(spec, pageable);
 
-        return new PageResponse<>(products, page, pageSize, total);
+        return new PageResponse<>(productPage.getContent(), page, pageSize, productPage.getTotalElements());
     }
 
     @Cacheable(value = "products", key = "#id")
