@@ -2,13 +2,18 @@ import { Client } from '@stomp/stompjs';
 import type { IMessage, StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
 const isLocalhost =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-const WS_BASE = isLocalhost
+const fallbackWsUrl = isLocalhost
   ? 'http://localhost:8080/ws'
   : 'https://clothstore-7jwr.onrender.com/ws';
+
+const WS_BASE = configuredApiUrl 
+  ? `${configuredApiUrl.replace(/\/$/, '')}/ws`
+  : fallbackWsUrl;
 
 class ChatService {
   private client: Client | null = null;
