@@ -6,7 +6,11 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders", indexes = {
+    @Index(name = "idx_order_user_id", columnList = "user_id"),
+    @Index(name = "idx_order_status", columnList = "status"),
+    @Index(name = "idx_order_created_at", columnList = "createdAt")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

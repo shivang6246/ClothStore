@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import api from '../services/api';
+import chatService from '../services/chatService';
 
 const PREMIUM_BTN: React.CSSProperties = {
   padding: '0.55rem 1.2rem', backgroundColor: '#c9a96e', color: '#0a0a0a',
@@ -83,7 +84,7 @@ function DonutChart({ segments }: { segments: { label: string; value: number; co
 }
 
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'analytics' | 'products' | 'orders' | 'coupons' | 'users'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'analytics' | 'products' | 'orders' | 'coupons' | 'users' | 'chat'>('dashboard');
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [analytics, setAnalytics] = useState<any>(null);
@@ -104,14 +105,36 @@ export default function AdminPanel() {
   const [orderFilter, setOrderFilter] = useState('ALL');
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
+  // ── Chat state ────────────────────────────────────────────────────────────
+  const [chatConversations, setChatConversations] = useState<any[]>([]);
+  const [selectedConvo, setSelectedConvo] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatConnected, setChatConnected] = useState(false);
+  const [unreadChats, setUnreadChats] = useState(0);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<HTMLInputElement>(null);
+  const convoSubRef = useRef<string | null>(null);
+  const adminSubRef = useRef<string | null>(null);
+  const activeTabRef = useRef(activeTab);
+
+  useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
+
   const isAdmin = localStorage.getItem('role') === 'ADMIN';
   const adminName = localStorage.getItem('fullName') || 'Admin';
 
-  useEffect(() => { if (isAdmin) fetchAll(); }, [isAdmin]);
+  useEffect(() => { 
+    if (isAdmin) {
+      fetchAll(); 
+      initChat();
+    }
+  }, [isAdmin]);
+
   useEffect(() => {
     if (activeTab === 'analytics' && !analytics) fetchAnalytics();
     if (activeTab === 'coupons') fetchCoupons();
     if (activeTab === 'users') fetchUsers();
+    if (activeTab === 'chat') setUnreadChats(0);
   }, [activeTab]);
 
   const fetchAll = async () => {
@@ -181,6 +204,100 @@ export default function AdminPanel() {
   };
   const handleLogout = () => { localStorage.clear(); window.location.href = '/login'; };
 
+  // ── Chat functions ──────────────────────────────────────────────────────
+  const scrollChatToBottom = useCallback(() => {
+    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+  }, []);
+
+  const initChat = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      await chatService.connect(token);
+      setChatConnected(true);
+
+      // Load conversation list
+      const res = await api.get('/api/chat/conversations');
+      setChatConversations(res.data);
+
+      // Subscribe to admin notifications for new messages
+      if (adminSubRef.current) chatService.unsubscribe(adminSubRef.current);
+      adminSubRef.current = chatService.subscribe('/topic/admin/conversations', (msg: any) => {
+        // Increment unread if not on chat tab or if on chat tab but not this convo
+        if (activeTabRef.current !== 'chat' && !msg.fromAdmin) {
+          setUnreadChats(prev => prev + 1);
+        }
+
+        // Update conversation list
+        setChatConversations((prev) => {
+          const existing = prev.findIndex((c) => c.conversationEmail === msg.conversationEmail);
+          if (existing >= 0) {
+            const updated = [...prev];
+            updated[existing] = msg;
+            // Move to top
+            updated.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            return updated;
+          }
+          return [msg, ...prev];
+        });
+        // If this convo is selected, add message to chat
+        setChatMessages((prev) => {
+          if (msg.id && prev.some((m: any) => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
+        scrollChatToBottom();
+      });
+    } catch (e) {
+      console.error('Chat init failed:', e);
+    }
+  };
+
+  const selectConversation = async (email: string) => {
+    setSelectedConvo(email);
+    try {
+      const res = await api.get(`/api/chat/history/${email}`);
+      setChatMessages(res.data);
+      scrollChatToBottom();
+
+      // Subscribe to this conversation
+      if (convoSubRef.current) chatService.unsubscribe(convoSubRef.current);
+      convoSubRef.current = chatService.subscribe(`/topic/conversation/${email}`, (msg: any) => {
+        setChatMessages((prev) => {
+          if (msg.id && prev.some((m: any) => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
+        scrollChatToBottom();
+      });
+
+      setTimeout(() => chatInputRef.current?.focus(), 100);
+    } catch (e) {
+      console.error('Failed to load conversation:', e);
+    }
+  };
+
+  const sendAdminReply = () => {
+    const text = chatInput.trim();
+    if (!text || !selectedConvo || !chatConnected) return;
+    chatService.sendMessage('/app/chat.send', {
+      conversationEmail: selectedConvo,
+      content: text,
+      fromAdmin: true,
+    });
+    setChatInput('');
+    chatInputRef.current?.focus();
+  };
+
+  const formatChatTime = (ts: string) => {
+    try {
+      const d = new Date(ts);
+      const now = new Date();
+      const isToday = d.toDateString() === now.toDateString();
+      if (isToday) return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ' ' +
+        d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    } catch { return ''; }
+  };
+
   if (!isAdmin) return <Navigate to="/" />;
 
   const totalRevenue = orders.reduce((a: number, o: any) => a + (o.totalAmount || 0), 0);
@@ -201,6 +318,7 @@ export default function AdminPanel() {
     { key: 'orders', label: 'Orders', icon: '◻' },
     { key: 'users', label: 'Users', icon: '□' },
     { key: 'coupons', label: 'Coupons', icon: '⊕' },
+    { key: 'chat', label: 'Chat', icon: '◎' },
   ] as const;
 
   // ── Shared styles ──────────────────────────────────────────────────────────
@@ -264,6 +382,9 @@ export default function AdminPanel() {
               {tab.key === 'orders' && paidOrders > 0 && (
                 <span style={{ marginLeft: 'auto', background: '#c0392b', color: 'white', padding: '0.1rem 0.4rem', borderRadius: 8, fontSize: '0.6rem', fontWeight: 700 }}>{paidOrders}</span>
               )}
+              {tab.key === 'chat' && unreadChats > 0 && (
+                <span style={{ marginLeft: 'auto', background: '#c9a96e', color: '#0a0a0a', padding: '0.1rem 0.4rem', borderRadius: 8, fontSize: '0.6rem', fontWeight: 700 }}>{unreadChats}</span>
+              )}
             </button>
           ))}
         </nav>
@@ -294,6 +415,7 @@ export default function AdminPanel() {
                 : activeTab === 'products' ? 'Products'
                 : activeTab === 'orders' ? 'Orders'
                 : activeTab === 'users' ? 'Users'
+                : activeTab === 'chat' ? 'Live Chat'
                 : 'Coupons'}
             </h1>
           </div>
@@ -692,6 +814,178 @@ export default function AdminPanel() {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* ══ CHAT ══ */}
+            {activeTab === 'chat' && (
+              <div className="ap-fade" style={{ display: 'flex', gap: '1.2rem', height: 'calc(100vh - 200px)', minHeight: 400 }}>
+                {/* Conversation List */}
+                <div style={{ width: 320, flexShrink: 0, ...CARD, padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                  <div style={{ padding: '1.2rem 1.2rem 0.8rem', borderBottom: '1px solid #1a1a1a' }}>
+                    <div style={{ fontSize: '0.6rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: '#888', fontWeight: 600 }}>Conversations</div>
+                  </div>
+                  <div style={{ flex: 1, overflowY: 'auto' }}>
+                    {chatConversations.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '3rem 1.5rem', color: '#555' }}>
+                        <div style={{ fontSize: '2rem', opacity: 0.3, marginBottom: '0.8rem' }}>💬</div>
+                        <div style={{ fontSize: '0.82rem' }}>No conversations yet</div>
+                        <div style={{ fontSize: '0.72rem', color: '#444', marginTop: '0.3rem' }}>Customer messages will appear here</div>
+                      </div>
+                    ) : (
+                      chatConversations.map((c: any) => (
+                        <button
+                          key={c.conversationEmail}
+                          onClick={() => selectConversation(c.conversationEmail)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '0.8rem',
+                            width: '100%', padding: '1rem 1.2rem',
+                            background: selectedConvo === c.conversationEmail ? 'rgba(201,169,110,0.08)' : 'transparent',
+                            border: 'none', borderBottom: '1px solid #111', borderLeft: selectedConvo === c.conversationEmail ? '2px solid #c9a96e' : '2px solid transparent',
+                            cursor: 'pointer', textAlign: 'left',
+                            fontFamily: "'Inter',sans-serif",
+                            transition: 'all 0.15s',
+                          }}
+                          onMouseEnter={(e) => { if (selectedConvo !== c.conversationEmail) e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                          onMouseLeave={(e) => { if (selectedConvo !== c.conversationEmail) e.currentTarget.style.background = 'transparent'; }}
+                        >
+                          <div style={{
+                            width: 36, height: 36, borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #1e1e1e, #2a2a2a)',
+                            border: '1px solid #333',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '0.85rem', fontWeight: 700,
+                            color: '#c9a96e', flexShrink: 0,
+                          }}>
+                            {(c.senderName || c.conversationEmail || '?').charAt(0).toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1, overflow: 'hidden' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                              <span style={{ fontSize: '0.82rem', fontWeight: 500, color: '#e0ddd6', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {c.senderName || c.conversationEmail}
+                              </span>
+                              <span style={{ fontSize: '0.58rem', color: '#555', flexShrink: 0, marginLeft: 8 }}>
+                                {formatChatTime(c.timestamp)}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '0.72rem', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {c.fromAdmin ? 'You: ' : ''}{c.content}
+                            </div>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Chat View */}
+                <div style={{ flex: 1, ...CARD, padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                  {!selectedConvo ? (
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#555', gap: '1rem' }}>
+                      <div style={{ fontSize: '3rem', opacity: 0.15 }}>◎</div>
+                      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.2rem', color: '#888' }}>Select a Conversation</div>
+                      <div style={{ fontSize: '0.75rem', color: '#555' }}>Choose a customer from the list to start chatting</div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Chat header */}
+                      <div style={{
+                        padding: '1rem 1.5rem',
+                        borderBottom: '1px solid #1a1a1a',
+                        display: 'flex', alignItems: 'center', gap: '0.8rem',
+                        background: 'rgba(201,169,110,0.03)',
+                      }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #c9a96e, #7c5a2e)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '0.8rem', fontWeight: 700, color: '#0a0a0a', flexShrink: 0,
+                        }}>
+                          {selectedConvo.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.88rem', fontWeight: 500, color: '#f0ede6' }}>
+                            {chatConversations.find((c) => c.conversationEmail === selectedConvo)?.senderName || selectedConvo}
+                          </div>
+                          <div style={{ fontSize: '0.65rem', color: '#888' }}>{selectedConvo}</div>
+                        </div>
+                      </div>
+
+                      {/* Messages */}
+                      <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {chatMessages
+                          .filter((m: any) => m.conversationEmail === selectedConvo)
+                          .map((msg: any, i: number) => {
+                            const isAdmin = msg.fromAdmin;
+                            return (
+                              <div key={msg.id || `am-${i}`} style={{
+                                display: 'flex',
+                                justifyContent: isAdmin ? 'flex-end' : 'flex-start',
+                                paddingLeft: isAdmin ? '3rem' : 0,
+                                paddingRight: isAdmin ? 0 : '3rem',
+                              }}>
+                                <div style={{
+                                  maxWidth: '80%',
+                                  padding: '0.6rem 0.9rem',
+                                  borderRadius: isAdmin ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                                  background: isAdmin ? 'linear-gradient(135deg, #c9a96e, #a8893e)' : '#1a1a1a',
+                                  color: isAdmin ? '#0a0a0a' : '#e0ddd6',
+                                  fontSize: '0.84rem',
+                                  lineHeight: 1.45,
+                                  border: isAdmin ? 'none' : '1px solid #252525',
+                                  wordBreak: 'break-word',
+                                }}>
+                                  {!isAdmin && (
+                                    <div style={{ fontSize: '0.6rem', fontWeight: 700, color: '#c9a96e', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 2 }}>
+                                      {msg.senderName || msg.senderEmail}
+                                    </div>
+                                  )}
+                                  <div>{msg.content}</div>
+                                  <div style={{ fontSize: '0.56rem', color: isAdmin ? 'rgba(10,10,10,0.5)' : '#555', textAlign: 'right', marginTop: 3 }}>
+                                    {formatChatTime(msg.timestamp)}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        <div ref={chatEndRef} />
+                      </div>
+
+                      {/* Reply input */}
+                      <div style={{ padding: '0.8rem 1.2rem', borderTop: '1px solid #1a1a1a', display: 'flex', gap: '0.5rem', alignItems: 'center', background: 'rgba(10,10,10,0.4)' }}>
+                        <input
+                          ref={chatInputRef}
+                          type="text"
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAdminReply(); } }}
+                          placeholder="Type your reply..."
+                          style={{
+                            flex: 1, padding: '0.7rem 1rem',
+                            background: '#0d0d0d', border: '1px solid #222',
+                            borderRadius: 8, color: '#f0ede6',
+                            fontSize: '0.85rem', fontFamily: "'Inter',sans-serif",
+                            outline: 'none',
+                          }}
+                          onFocus={(e) => (e.target.style.borderColor = '#c9a96e')}
+                          onBlur={(e) => (e.target.style.borderColor = '#222')}
+                        />
+                        <button
+                          onClick={sendAdminReply}
+                          disabled={!chatInput.trim() || !chatConnected}
+                          style={{
+                            ...PREMIUM_BTN,
+                            padding: '0.65rem 1.2rem',
+                            opacity: chatInput.trim() && chatConnected ? 1 : 0.4,
+                            cursor: chatInput.trim() && chatConnected ? 'pointer' : 'not-allowed',
+                          }}
+                        >
+                          Send
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </>

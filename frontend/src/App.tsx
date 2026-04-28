@@ -12,6 +12,7 @@ import Looks from './pages/Looks';
 import About from './pages/About';
 import { PrivacyPolicy, TermsOfUse, ReturnsAndCare } from './pages/LegalPages';
 import { StoreProvider } from './context/StoreContext';
+import ChatWidget from './components/ChatWidget';
 import './index.css';
 
 // Route guard for authenticated users
@@ -60,6 +61,7 @@ function App() {
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/returns" element={<ReturnsAndCare />} />
         </Routes>
+        <ChatWidget />
       </StoreProvider>
     </Router>
   );

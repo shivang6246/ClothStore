@@ -6,7 +6,11 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Table(name = "reviews")
+@Table(name = "reviews", indexes = {
+    @Index(name = "idx_review_product_id", columnList = "product_id"),
+    @Index(name = "idx_review_user_id", columnList = "user_id"),
+    @Index(name = "idx_review_product_user", columnList = "product_id, user_id")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

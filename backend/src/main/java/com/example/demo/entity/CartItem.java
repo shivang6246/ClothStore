@@ -5,7 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Table(name = "cart_items")
+@Table(name = "cart_items", indexes = {
+    @Index(name = "idx_cart_user_id", columnList = "user_id"),
+    @Index(name = "idx_cart_user_product", columnList = "user_id, product_id, size, color")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -113,7 +113,7 @@ export default function Home() {
         @keyframes hf{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:scale(1)}}
         .pc:hover .co{opacity:1!important}
         .pc:hover .pi{transform:scale(1.05)}
-        .pi{transition:transform .6s ease;width:100%;height:360px;object-fit:cover;display:block}
+        .pi{transition:transform .6s ease;width:100%;height:clamp(240px,45vw,360px);object-fit:cover;display:block}
         .co{opacity:0!important;transition:opacity .3s ease;position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;flex-direction:column;justify-content:flex-end;padding:20px;gap:10px}
         .si{animation:sl .35s cubic-bezier(.25,.8,.25,1)}
         @keyframes sl{from{transform:translateX(100%)}to{transform:translateX(0)}}
@@ -194,11 +194,11 @@ export default function Home() {
       {quickView && (
         <div style={{ position:"fixed", inset:0, zIndex:900, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
           <div onClick={() => setQuickView(null)} style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.88)" }} />
-          <div style={{ position:"relative", background:"#111", display:"flex", width:"min(860px,95vw)", maxHeight:"90vh", overflow:"hidden" }}>
-            <div style={{ width:"44%", flexShrink:0 }}>
-              <img src={getPremiumImage(quickView)} alt={quickView.name} style={{ width:"100%", height:"100%", objectFit:"cover", minHeight:480, display:"block" }} />
+          <div style={{ position:"relative", background:"#111", display:"flex", flexDirection:"row", flexWrap:"wrap", width:"min(860px,95vw)", maxHeight:"90vh", overflow:"auto" }}>
+            <div style={{ width:"100%", maxWidth:"44%", flexShrink:0, minWidth:"280px" }}>
+              <img src={getPremiumImage(quickView)} alt={quickView.name} style={{ width:"100%", height:"100%", objectFit:"cover", minHeight:320, maxHeight:480, display:"block" }} />
             </div>
-            <div style={{ flex:1, padding:"48px 40px 40px", display:"flex", flexDirection:"column", overflowY:"auto" }}>
+            <div style={{ flex:1, padding:"clamp(20px,4vw,48px) clamp(20px,4vw,40px)", display:"flex", flexDirection:"column", overflowY:"auto", minWidth:"260px" }}>
               <button className="ib" onClick={() => setQuickView(null)} style={{ alignSelf:"flex-end", marginBottom:16, fontSize:14, color:"#666" }}>✕</button>
               <span style={{ fontFamily:"'Montserrat',sans-serif", fontSize:9, letterSpacing:3.5, color:"#c9a96e", textTransform:"uppercase", marginBottom:10 }}>{quickView.category || "Couture"} · {quickView.stock && quickView.stock > 0 ? "Available" : "Limited"}</span>
               <h2 style={{ fontSize:34, fontWeight:300, marginBottom:14, lineHeight:1.15 }}>{quickView.name}</h2>
@@ -291,7 +291,7 @@ export default function Home() {
 
       {/* SEARCH */}
       {searchOpen && (
-        <div style={{ position:"fixed", top:72, left:0, right:0, zIndex:400, background:"rgba(10,10,10,.97)", padding:"24px 48px 28px", borderBottom:"0.5px solid #1c1c1c", backdropFilter:"blur(12px)" }}>
+        <div style={{ position:"fixed", top:72, left:0, right:0, zIndex:400, background:"rgba(10,10,10,.97)", padding:"24px clamp(16px,5vw,48px) 28px", borderBottom:"0.5px solid #1c1c1c", backdropFilter:"blur(12px)" }}>
           <input type="text" value={query} onChange={e => { setQuery(e.target.value); setPage("collection"); }}
             placeholder="Search the collection…"
             style={{ width:"100%", background:"none", border:"none", borderBottom:"0.5px solid #252525", color:"#f0ede6", fontFamily:"'Cormorant Garamond',serif", fontSize:22, padding:"8px 0", letterSpacing:2 }}

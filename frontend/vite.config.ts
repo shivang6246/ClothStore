@@ -28,6 +28,14 @@ export default defineConfig({
       'Cache-Control': 'public, max-age=3600',
       'X-Content-Type-Options': 'nosniff',
     } as Record<string, string>,
+    hmr: {
+      // Fallback: use polling if WebSocket is blocked by a browser extension
+      overlay: false,
+    },
+    watch: {
+      usePolling: true,
+      interval: 1000,
+    },
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],

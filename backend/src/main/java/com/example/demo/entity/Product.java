@@ -5,7 +5,11 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Table(name = "products")
+@Table(name = "products", indexes = {
+    @Index(name = "idx_product_category", columnList = "category"),
+    @Index(name = "idx_product_name", columnList = "name"),
+    @Index(name = "idx_product_price", columnList = "price")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,16 +32,19 @@ public class Product {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_sizes", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "size")
+    @org.hibernate.annotations.BatchSize(size = 50)
     private List<String> sizes;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_colors", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "color")
+    @org.hibernate.annotations.BatchSize(size = 50)
     private List<String> colors;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "additional_image_url")
+    @org.hibernate.annotations.BatchSize(size = 50)
     private List<String> multipleImages;
 
     @Transient

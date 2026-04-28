@@ -27,7 +27,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
-                .requestMatchers("/auth/**", "/uploads/**", "/error").permitAll()
+                .requestMatchers("/auth/**", "/uploads/**", "/error", "/ws/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                 .requestMatchers("/api/products", "/api/products/**").hasRole("ADMIN")
                 .requestMatchers("/api/checkout/admin/**").hasRole("ADMIN")

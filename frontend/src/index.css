@@ -354,46 +354,103 @@ img { max-width: 100%; display: block; }
   display: none; background: none; border: none; color: var(--text-main); cursor: pointer; padding: 0.5rem;
 }
 
-/* Mobile */
+/* ═══════════════════════════════════════════════════
+   MOBILE (≤768px) – PRIMARY RESPONSIVE BREAKPOINT
+   ═══════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 1.5rem !important; }
+
+  /* ── Grids ── */
+  .grid-2, .grid-3 { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
   .grid-5 { grid-template-columns: 1fr 1fr; }
   .hide-mobile { display: none !important; }
-  
+
+  /* ── Navigation ── */
   .responsive-nav { padding: 1rem 5% !important; flex-wrap: nowrap; }
   .nav-links { display: none !important; }
   .hamburger-btn { display: block; }
 
+  /* ── Home Page Hero ── */
   .home-hero-text { font-size: 2.2rem !important; }
+
+  /* ── Product Detail ── */
   .product-title { font-size: 1.8rem !important; }
+
+  /* ── General ── */
   .mobile-gap-sm { gap: 1rem !important; }
   .admin-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .section-y-padding { padding-top: 3rem !important; padding-bottom: 3rem !important; }
   .section-padding { padding: 40px 5% 40px !important; }
 
-  .admin-sidebar { 
+  /* ── Admin Sidebar ── */
+  .admin-sidebar {
     width: 100% !important; position: static !important;
     border-right: none !important; border-bottom: 1px solid #141414; height: auto;
+    flex-direction: row !important; overflow-x: auto !important;
+    padding: 0 !important;
   }
-  .admin-main { margin-left: 0 !important; padding: 1.5rem 5% !important; }
+  .admin-sidebar nav {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    gap: 0 !important;
+    padding: 0.5rem !important;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-sidebar nav button {
+    white-space: nowrap !important;
+    padding: 0.6rem 1rem !important;
+    font-size: 0.7rem !important;
+    min-width: max-content !important;
+  }
+  .admin-main { margin-left: 0 !important; padding: 1.5rem 4% !important; }
 
+  /* ── Login Split Layout ── */
   .split-layout { flex-direction: column; }
-  .split-left { 
+  .split-left {
     min-height: 300px; padding: 2rem; flex: none; width: 100% !important;
     background-size: cover;
     background-position: center 40%;
     background-attachment: scroll !important;
   }
-  .split-left::before { 
+  .split-left::before {
     position: absolute !important;
     width: 100% !important;
   }
   .split-left > div:last-child { display: none; }
   .split-right { padding: 2.5rem 5%; flex: 1; width: 100% !important; }
+
+  /* ── Quick View Modal ── */
+  .modal-content { padding: 1.5rem !important; }
+
+  /* ── Chat Widget ── */
+  #chat-panel {
+    bottom: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+  #chat-fab {
+    bottom: 16px !important;
+    right: 16px !important;
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  /* ── Footer ── */
+  footer { padding: 40px 5% 28px !important; }
+  footer > div:first-child { gap: 32px !important; }
 }
 
+/* ═══════════════════════════════════════════════════
+   SMALL MOBILE (≤480px)
+   ═══════════════════════════════════════════════════ */
 @media (max-width: 480px) {
-  .grid-4, .grid-5 { grid-template-columns: 1fr; }
+  .grid-4, .grid-5 { grid-template-columns: 1fr !important; }
   .cart-grid, .checkout-grid { gap: 1.5rem; }
 
   /* Typography Scaling */
@@ -402,101 +459,126 @@ img { max-width: 100%; display: block; }
   h3 { font-size: 1.1rem !important; }
   h4 { font-size: 0.95rem !important; }
   p { font-size: 0.9rem !important; line-height: 1.5; }
-  
+
   /* Spacing */
   .section-padding { padding: 24px 5% 24px !important; }
   .responsive-padding { padding: 0 4% !important; }
-  
+
   /* Buttons */
   .primary-btn, .filled-btn { padding: 0.7rem 1.5rem !important; font-size: 0.7rem !important; }
-  
+
   /* Input Fields */
   .input-field { padding: 0.75rem 0.8rem !important; font-size: 0.85rem !important; }
-  
+
   /* Product Cards */
   .product-card { margin-bottom: 1rem; }
   .product-image { aspect-ratio: 3/4; height: 280px; }
-  
+
   /* Modal */
   .modal-content { padding: 1.5rem !important; max-width: 95vw; }
-  
+
   /* Admin */
   .admin-sidebar { height: auto; margin-bottom: 1rem; }
   .admin-main { padding: 1rem 4% !important; }
+
+  /* Product Detail: stack CTA buttons */
+  .product-title { font-size: 1.5rem !important; }
 }
 
-/* Extra Small Devices */
+/* ═══════════════════════════════════════════════════
+   EXTRA SMALL DEVICES (≤320px)
+   ═══════════════════════════════════════════════════ */
 @media (max-width: 320px) {
   h1 { font-size: 1.4rem !important; }
   h2 { font-size: 1.1rem !important; }
-  
+
   .primary-btn, .filled-btn { padding: 0.6rem 1rem !important; font-size: 0.65rem !important; }
   .section-padding { padding: 16px 3% 16px !important; }
 }
 
-/* Large Screens */
+/* ═══════════════════════════════════════════════════
+   TABLET (768px – 1024px)
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .grid-5 { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+  .responsive-padding { padding: 0 6% !important; }
+  .section-padding { padding: 60px 6% 50px !important; }
+
+  .admin-sidebar { width: 180px; }
+  .admin-main { margin-left: 180px; padding: 2rem !important; }
+
+  .split-right { padding: 0 8%; }
+
+  /* Cart & Checkout: stack on smaller tablets */
+  .cart-grid { grid-template-columns: 1fr; }
+  .checkout-grid { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════════════════
+   MEDIUM SCREENS (1024px – 1400px)
+   ═══════════════════════════════════════════════════ */
+@media (min-width: 1025px) and (max-width: 1399px) {
+  .responsive-padding { padding: 0 6% !important; }
+  .grid-5 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ═══════════════════════════════════════════════════
+   LARGE SCREENS (≥1600px)
+   ═══════════════════════════════════════════════════ */
 @media (min-width: 1600px) {
   .responsive-padding { padding: 0 10% !important; }
   .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.5rem; }
   .section-padding { padding: 100px 12% 88px !important; }
 }
 
-/* Tablet (768px - 1024px) */
-@media (max-width: 1024px) and (min-width: 769px) {
-  .grid-3 { grid-template-columns: 1fr 1fr; }
-  .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-  .grid-5 { grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-  
-  .responsive-padding { padding: 0 6% !important; }
-  .section-padding { padding: 60px 6% 50px !important; }
-  
-  .admin-sidebar { width: 180px; }
-  .admin-main { margin-left: 180px; padding: 2rem !important; }
-  
-  .split-right { padding: 0 8%; }
-}
-
-/* Medium Screens (1024px - 1400px) */
-@media (min-width: 1025px) and (max-width: 1399px) {
-  .responsive-padding { padding: 0 6% !important; }
-  .grid-5 { grid-template-columns: repeat(4, 1fr); }
-}
-
-/* Print Styles */
+/* ═══════════════════════════════════════════════════
+   PRINT STYLES
+   ═══════════════════════════════════════════════════ */
 @media print {
   .navbar, .admin-sidebar, .hamburger-btn, .modal-backdrop { display: none !important; }
   body { background: white; color: black; }
   .product-card, .section-padding { break-inside: avoid; }
 }
 
-/* Landscape Mobile */
+/* ═══════════════════════════════════════════════════
+   LANDSCAPE MOBILE
+   ═══════════════════════════════════════════════════ */
 @media (max-width: 768px) and (orientation: landscape) {
   .split-left { min-height: auto; padding: 1rem; }
   .section-padding { padding: 2rem 5% !important; }
+
+  /* Chat: make it usable in landscape */
+  #chat-panel {
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
 }
 
-/* Touch Device Optimization */
+/* ═══════════════════════════════════════════════════
+   TOUCH DEVICE OPTIMIZATION
+   ═══════════════════════════════════════════════════ */
 @media (hover: none) and (pointer: coarse) {
   .product-card:hover { transform: none; }
   .primary-btn, .filled-btn { padding: 0.9rem 2rem !important; }
+
+  /* Show overlays always on touch since hover doesn't exist */
+  .co { opacity: 0 !important; }
+  .pc:active .co { opacity: 1 !important; }
 }
 
-/* Accessibility */
+/* ═══════════════════════════════════════════════════
+   ACCESSIBILITY
+   ═══════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg-primary: #f5f5f5;
-    --bg-secondary: #ffffff;
-    --text-main: #1a1a1a;
-    --text-muted: #666;
-  }
-}
-
-/* High DPI Display */
+/* ═══════════════════════════════════════════════════
+   HIGH DPI DISPLAY
+   ═══════════════════════════════════════════════════ */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   body { -webkit-font-smoothing: subpixel-antialiased; }
 }
