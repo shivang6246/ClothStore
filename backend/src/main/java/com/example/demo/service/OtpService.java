@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -76,7 +77,7 @@ public class OtpService {
         }
     }
 
-
+    @Async
     @Transactional
     public void generateAndSendOtpForReset(String email) {
         // Find user, throw error if not exists
