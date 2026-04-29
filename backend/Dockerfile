@@ -7,5 +7,9 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
+# Environment Variables (Will be picked up from EC2 if provided)
+ENV PORT=8080
+ENV APP_SEED_PRODUCTS_ENABLED=false
+
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
