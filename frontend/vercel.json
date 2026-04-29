@@ -1,22 +1,22 @@
 {
-"cleanUrls": true,
-"trailingSlash": false,
-"rewrites": [
-{
-"source": "/api/(.*)",
-"destination": "http://15.135.140.215:8080/api/$1"
-},
-{
-"source": "/auth/(.*)",
-"destination": "http://15.135.140.215:8080/auth/$1"
-},
-{
-"source": "/uploads/(.*)",
-"destination": "http://15.135.140.215:8080/uploads/$1"
-},
-{
-"source": "/(.*)",
-"destination": "/"
-}
-]
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "http://15.134.225.163:8080/api/$1"
+    },
+    {
+      "source": "/auth/(.*)",
+      "destination": "http://15.134.225.163:8080/auth/$1"
+    },
+    {
+      "source": "/uploads/(.*)",
+      "destination": "http://15.134.225.163:8080/uploads/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
