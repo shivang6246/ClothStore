@@ -1,4 +1,6 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "http://15.135.140.215:8080/api/$1" },
     { "source": "/auth/(.*)", "destination": "http://15.135.140.215:8080/auth/$1" },
