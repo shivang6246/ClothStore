@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { cacheManager } from '../utils/cache';
 
-// Use Vercel proxy (relative path)
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+// Use Vercel proxy (relative path) in production to avoid mixed content
+const BASE_URL = import.meta.env.PROD ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:8080');
 
 const api = axios.create({
   baseURL: BASE_URL,
