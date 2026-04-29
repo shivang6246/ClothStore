@@ -1,14 +1,11 @@
 import axios from 'axios';
 import { cacheManager } from '../utils/cache';
 
-const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
-const isLocalhost =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-const fallbackApiUrl = isLocalhost ? 'http://localhost:8080' : 'https://clothstore-7jwr.onrender.com';
+// Use Vercel proxy (relative path)
+const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const api = axios.create({
-  baseURL: (configuredApiUrl || fallbackApiUrl).replace(/\/$/, ''),
+  baseURL: BASE_URL,
 });
 
 // Attach JWT to every request
@@ -20,13 +17,14 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auto-logout on 401 (expired or invalid JWT)
+// Auto-logout on 401
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       const currentPath = window.location.pathname;
-      // Don't redirect if we're already on login page or hitting auth endpoints
+
+      // Avoid redirect loop on auth routes
       if (currentPath !== '/login' && !error.config?.url?.startsWith('/auth/')) {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
@@ -37,27 +35,30 @@ api.interceptors.response.use(
   }
 );
 
-// Cache GET responses automatically
+// Cache GET responses
 api.interceptors.response.use((response) => {
   if (response.config.method === 'get' && response.status === 200) {
-    const cacheKey = `${response.config.url}`;
+    const cacheKey = response.config.url || '';
     cacheManager.set(cacheKey, response.data);
   }
   return response;
 });
 
-// Wrapper function to check cache before making requests
+// Wrapper with cache
 export const apiWithCache = {
   get: async <T = any>(url: string, config?: any): Promise<any> => {
-    const cacheKey = url;
-    const cached = cacheManager.get(cacheKey);
+    const cached = cacheManager.get(url);
 
     if (cached) {
-      // Return cached response immediately
-      return Promise.resolve({ data: cached, status: 200, statusText: 'OK (CACHED)', config, headers: {} });
+      return Promise.resolve({
+        data: cached,
+        status: 200,
+        statusText: 'OK (CACHED)',
+        config,
+        headers: {},
+      });
     }
 
-    // Make actual request if not cached
     return api.get<T>(url, config);
   },
 };
